@@ -1,0 +1,29 @@
+Package: consonance
+Title: Consonance testing
+Version: 0.0.1.0
+Authors@R: 
+    person("Tomasz", "Konopka", , "tokonopka@gmail.com", role = c("aut", "cre"))
+Author: Tomasz Konopka [aut, cre]
+Maintainer: Tomasz Konopka <tokonopka@gmail.com>
+Description: Consonance testing.
+Depends:
+    R (>= 3.4.0)
+Imports:
+    log4r,
+    methods
+License: BSD_3_clause + file LICENSE
+URL: https://github.com/tkonopka/consonance
+BugReports: https://github.com/tkonopka/consonance/issues
+LazyData: true
+Suggests:
+    assertr,
+    dplyr,
+    checkmate,
+    knitr,
+    microbenchmark,
+    rmarkdown,
+    Rcssplot (>= 1.0),
+    testthat
+VignetteBuilder: knitr
+Encoding: UTF-8
+RoxygenNote: 7.0.2

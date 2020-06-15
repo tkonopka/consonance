@@ -1,0 +1,353 @@
+## User's guide {#guide}
+
+This section introduces more features of the `consonance` package.
+Code examples require the following packages.
+
+```{r}
+library(consonance)
+library(checkmate)
+library(dplyr)
+```
+
+For concreteness, we will use the `anscombe` dataset available with base R.
+
+```{r}
+head(anscombe, 2)
+```
+
+The dataset holds four pairs of (x, y) coordinates in arbitrary units.
+It will be convenient to arrange the data into four separate data frames.
+
+```{r}
+datasets <- list(A = data.frame(id = "A", x = anscombe$x1, y = anscombe$y1),
+                 B = data.frame(id = "B", x = anscombe$x2, y = anscombe$y2),
+                 C = data.frame(id = "C", x = anscombe$x3, y = anscombe$y3),
+                 D = data.frame(id = "D", x = anscombe$x4, y = anscombe$y4))
+```
+
+What makes these datasets interesting is that they have very similar
+(Pearson) correlations, but quite distinct patterns.
+
+```{r anscombe_plots, echo=FALSE, eval=TRUE, fig.width=6.5, fig.height=1.3, dpi=300, out.width="100%"}
+oldpar <- par()
+par(mfrow=c(1,4))
+plot_anscombe(datasets$A)
+plot_anscombe(datasets$B)
+plot_anscombe(datasets$C)
+plot_anscombe(datasets$D)
+newpar <- par(oldpar)
+```
+
+In this section, we will set up consonance suites for this data and for
+regression models based on these four patterns.
+
+
+
+### Data consonance
+
+#### Vectors
+
+We saw in the overview how to check that data vectors are numeric.
+
+```{r}
+suite_numeric_vec <-
+  consonance_suite() +
+  consonance_assert("numeric vector", assert_numeric, any.missing=FALSE)
+# perform the assessment on dataset "A"
+datasets$A$x %>% test_consonance(suite_numeric_vec)
+datasets$A$y %>% test_consonance(suite_numeric_vec)
+```
+
+
+#### Data frames & data tables
+
+When data consists of a data frame, data table, or list, test can be carried
+out on individual columns / components. This behavior can be triggered via
+argument `.var`.
+
+```{r}
+suite_numeric_df <-
+  consonance_assert("numeric x", assert_numeric, any.missing=FALSE, .var="x") +
+  consonance_assert("numeric y", assert_numeric, any.missing=FALSE, .var="y")
+```
+
+The argument `any.missing` in each assertion is understood to be passed to
+the assertion function, `assert_numeric`. Argument `.var` begins with
+a `.` in order to avoid name-clashing with arguments that may be relevant to the
+assertion function. It instructs package `consonance` to carry out the assertion
+on the designated component.
+
+Applying this suite on one of the `anscombe` datasets should execute quietly.
+
+```{r}
+datasets$A %>% test_consonance(suite_numeric_df)
+```
+
+To observe a failed test, we can apply the suite on a corrupted data frame.
+
+```{r, error=TRUE}
+temp <- datasets$A
+temp$x[2] = NA
+temp %>% test_consonance(suite_numeric_df)
+```
+
+The error messages indicate the corrupt data was detected, as intended.
+
+
+
+#### Objects
+
+
+
+
+
+### Custom assertions
+
+We have seen that consonance assertions can be defined using `assert_numeric`
+and `assert_named` from the `checkmate` package. Indeed, `checkmate` provides
+dozens of functions that cover many often-used criteria. All of those
+functions can be incorporated into a consonance suite. Nonetheless, there may
+arise situations where a ready-made assertion function is not available.
+In those scenarios it is possible to define a custom assertion.
+
+As an example, let's suppose we want to require that a vector has at least
+three distinct values. We can define a custom function.
+
+```{r}
+assert_n_unique <- function(x, n) {
+  stopifnot(length(unique(x)) >= n)
+  x
+}
+```
+
+Then, we can incorporate this function into a test suite.
+
+```{r}
+suite_3_unique <-
+  consonance_suite() +
+  consonance_assert("at least 3 distinct x", assert_n_unique, n=3, .var="x")
+```
+
+Next, we can apply this suite on the `anscombe` datasets.
+
+```{r, error=TRUE}
+datasets$A %>% test_consonance(suite_3_unique)
+datasets$D %>% test_consonance(suite_3_unique)
+```
+
+Dataset "A" passes the consonance assessment, but dataset "D" does not (refer
+to the figure). This is not a purely conceptual exercise: if a step in the
+analysis relies on `smooth.spline` to fit a model, the x-coordinates will
+need to have at least three unique positions for spline nodes. This
+procedure detects that smoothing splines will not be feasible for dataset "D".
+
+
+
+
+### Terminology: assert, check, test, expect
+
+There are several related term that appear in the literature on unit testing
+and argument checking: assert, check, test, expect. Although they are almost
+synonyms in everyday language, they can delineate precise behaviors in code.
+This is relevant when adding components into a consonance suite, and
+especially when writing custom functions.
+
+The `consonance` package follows the same convention as package `checkmate`
+for assert, check, and test functions. Given a function `f(x)`, the three
+function types evaluate the data `x` and signal a positive (PASS) or a
+negative (FAIL) outcome. The signals are summarized below.
+
+| Function type | outcome: PASS | outcome: FAIL |
+| --------------| ---- | ---- |
+| assert        | `x` or `invisible(x)` | `stop()` |
+| check         | `TRUE` | `"string with error message"` |
+| test          | `TRUE` | `FALSE` |
+
+Given this terminology, function `assert_n_unique` is an assertion because it
+returns its input or stops execution. An analogous behavior might be written
+as a test as follows
+
+```{r}
+test_n_unique <- function(x, n) {
+  length(unique(x)) >= n
+}
+```
+
+This alternative function type can also be used within a consonance suite.
+However, it should be added via a different constructor.
+
+```{r}
+suite_3_unique_alt <-
+  consonance_suite() +
+  consonance_test("at least 3 distinct x", test_n_unique, n=3, .var="x")
+```
+
+Note that this definition involves `consonance_test` rather than
+`consonance_assert`. For a check function, the relevant constructor is
+`consonance_check`.
+
+All three function types can be used together in a single consonance suite.
+However, some unexpected may arise if a function of one type is added
+with an inappropriate constructor. It is probably a good idea to pick one
+function style and stick with it.
+
+**To do:** discuss functions of type 'expect' and package `testthat`.
+
+*Aside:* natural language also has other verbs like 'verify' and 'validate'
+with similar meanings. These do not have precise analog in the package.
+
+
+
+### Importance levels
+
+We have seen that `test_consonanace` can generate error messages and halt
+execution via R's `stop`. In some situations, it may be appropriate to
+signal a potential problem but to nonetheless continue execution.
+This can be achieved by setting importance levels using argument `.level`.
+
+As a practical example, let's look at the distribution of x-coordinates
+in the `anscombe` dataset.
+
+```{r}
+# from the scatter plots, x-coordinates are in range [4, 19]
+anscombe.x = unlist(lapply(datasets, function(d) { d$x } ))
+anscombe.qs = quantile(anscombe.x, p=c(0, 0.1, 0.9, 1))
+anscombe.qs
+```
+
+`anscombe.qs` gives the minimum and maximum values for x, and the
+10\% and 90\% quantiles as well. If we construct regression models (next
+section), it would for relevant to know if a new value for x lies in this
+range. Let's make a suite that uses the 10\% and 90\%
+quantiles to signal a warning, and the min/max values to escalate to an error.
+
+```{r}
+suite_x <-
+  consonance_assert("within range", assert_numeric,
+                    lower=anscombe.qs[1], upper=anscombe.qs[4],
+                    .var="x", .level="error") +
+  consonance_assert("within inner range", assert_numeric,
+                    lower=anscombe.qs[2], upper=anscombe.qs[3],
+                    .var="x", .level="warning")
+```
+
+The first assertion uses `.level="error"`, which is the default value and
+corresponds to the examples we have seen before. The second assertion uses
+`.level="warning"`. Both act on a column `.var="x"` in a data frame. So
+let's create small data frames.
+
+```{r, error=TRUE}
+# a value of x outside the range should here raise an error
+data.frame(x=min(anscombe.x)-1) %>% test_consonance(suite_x)
+# a value of x on the outskirts of the distribution should raise a warning
+data.frame(x=mean(anscombe.qs[1:2])) %>% test_consonance(suite_x)
+```
+
+Note that the last example generates only warnings and allows execution
+to continue.
+
+
+
+### Model consonance
+
+The package enables attaching a consonance suite to R's 'S3' object, for
+example to outputs from `lm`, `glm`, or other modeling frameworks. To
+demonstrate this, let's create a regression model for the second `anscombe`
+series.
+
+```{r}
+B_lm <- lm(y~x, data=datasets$B)
+B_lm
+```
+
+As the plot at the start of the section shows, a linear regression is a
+reasonable first approximation for the series. But the series is actually
+better modeled by a parabola; it would be a mistake to use the linear model
+outside the x-range used to fit the model. So let's create a suite of
+tests to capture this reasoning.
+
+```{r}
+suite_lm <- consonance_suite() +
+  consonance_assert("x range", assert_numeric, .var="x", .level="warning",
+                    lower=min(datasets$B$x), upper=max(datasets$B$x))
+```
+
+We can now attach the suite to the model.
+
+```{r}
+B_lm_2 <- attach_consonance(B_lm, suite_lm)
+```
+
+(This is actually just a long-form syntax, and the same result can be achieved
+by setting `B_lm_2$consonance <- suite_lm`.) The power of this step is that
+we can now use the model to perform data consonance checks.
+
+```{r}
+# prediction on x-coordinates within the model range
+in_range <- data.frame(x=c(5, 10))
+in_range %>% test_consonance(B_lm_2) %>% predict(object=B_lm_2)
+# prediction on x-coordinates outside of the model range
+out_range <- data.frame(x=c(20, 30))
+out_range %>% test_consonance(B_lm_2) %>% predict(object=B_lm_2)
+```
+
+The second dataset generates warnings and produces y-coordinates
+that are quite far from what one might guess from a parabolic trend (refer
+to the figure).
+
+Note that this example produces warning messages, but it nonetheless displays
+a prediction. This is because the assertion in `suite_lm` was defined with
+`.level="warning"`. It would also be reasonable to set `.level="error"`
+(the default). `test_consonance` would then halt execution before any
+prediction is made.
+
+
+
+
+### Logging
+
+By default, `test_consonance` does not generate output when
+evaluated on consonant data and outputs messages upon problems. The
+level of logging can be adjusted by setting `logging.level` to `"INFO"`,
+`"WARN"`, or `"ERROR"`.
+
+Setting the logging level in the suite constructor affects all evaluations.
+
+```{r}
+# create a suite that will generate a lot of log messages
+suite_verbose <-
+  consonance_suite(logging.level="INFO") +
+  consonance_assert("character vector", assert_character)
+# simple evaluations will generate log messages
+test_consonance(c("a", "b"), suite_verbose)
+```
+
+Another way to toggle the logging level is within `test_consonance`.
+
+```{r}
+# set up a canonical suite
+suite_standard <-
+  consonance_suite() +
+  consonance_assert("character vector", assert_character)
+# by default, successful runs will not generate messages
+test_consonance(c("a", "b"), suite_standard)
+# but we can request more information
+test_consonance(c("a", "b"), suite_standard, logging.level="INFO")
+# logging goes back to normal without the explicit argument
+test_consonance(c("a", "b"), suite_standard)
+```
+
+Instead of writing messages to the console, the logger can output into a file
+instead. This is achieved with argument `log.file`, either in the suite
+constructor or within `test_consonance`. For brevity, an example of the
+latter is as follows.
+
+```{r, echo=TRUE, eval=FALSE}
+# the verbose suite would normally display messages in the console
+test_consonance(c("a", "b"), suite_verbose, log.file="my-log.log")
+```
+
+*Note:* If a consonance suite were to fail while using a file-based logger,
+messages would appear only in the file and not in the console. Execution
+would nonetheless be halted.
+

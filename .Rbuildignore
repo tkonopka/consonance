@@ -1,0 +1,16 @@
+## Files to ignore when building package
+
+.travis.yml
+.gitignore
+.git
+.idea
+
+^README
+^LICENSE.md
+
+## Temporary files
+^R/.+~$
+^vignettes/.+~$
+^vignettes/.*html$
+^vignettes/.*png$
+

@@ -1,0 +1,279 @@
+---
+title: Consonance testing - performance
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Performance}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+```{r, child=file.path("sections", "styles.Rmd")}
+```
+
+```{r, echo=FALSE}
+suppressMessages(library(Rcssplot))
+source("plot_consonance.R")
+```
+
+
+
+## Introduction
+
+The `consonance` package provides a framework for performing quality control
+on datasets and models. The primary vignette for the package provides
+background and explains usage. This vignette is a supplement that compares
+the package to other approaches for testing data.
+
+As a word of caution, the comparison presented below is not exhaustive.
+However, it includes approaches implemented using only base R and
+some using external packages `checkmate` and `assertr`. Moreover,
+performance measurements are only carried out on a single dataset, so they
+cannot be taken as representative of all use cases. These caveats
+notwithstanding, the comparison conveys that the `consonance`
+package is competitive compared to alternatives.
+
+
+
+
+## Performance {#performance}
+
+Code in this vignette relies on the following packages.
+
+```{r}
+library(dplyr)
+library(checkmate)
+library(assertr)
+library(consonance)
+library(microbenchmark)
+```
+
+
+### Dataset
+
+For practical measurements of performance, let's look at the `anscombe`
+dataset, which was also used in the primary vignette. Let's prepare it into
+a single data frame with three columns - one (character) identifier column
+and two (numeric) coordinate columns.
+
+```{r}
+anscombe_good <- rbind(data.frame(id = "A", x = anscombe$x1, y = anscombe$y1),
+                       data.frame(id = "B", x = anscombe$x2, y = anscombe$y2),
+                       data.frame(id = "C", x = anscombe$x3, y = anscombe$y3),
+                       data.frame(id = "D", x = anscombe$x4, y = anscombe$y4))
+anscombe_good$id <- as.character(anscombe_good$id)
+rownames(anscombe_good) <- NULL
+head(anscombe_good, 2)
+```
+
+The range for the x-coordinate is a useful quantity for quality control
+(see primary vignette). It will be helpful to save minimum and maximum values.
+
+```{r}
+x_min <- min(anscombe_good$x)
+x_max <- max(anscombe_good$x)
+```
+
+We will also need a corrupted dataset. As a simple corruption, we can
+set one of the x-coordinates to outside the intended range.
+
+```{r}
+anscombe_bad <- anscombe_good
+anscombe_bad$x[2] <- x_max + 10
+head(anscombe_bad, 2)
+```
+
+
+### Pipelines
+
+Let's create several pipeline that validate the dataset. The requirements
+will be that the `id` column is composed of at least one character and
+that the x-coordinates are within the expected range.
+
+Using the `consonance` package, we can first define a suite of tests, and
+then invoke this suite on data.
+
+```{r}
+suite_consonance <-
+  consonance_assert("id single char", assert_character,
+                    min.chars=1, .var="id") +
+  consonance_assert("x in bounds", assert_numeric,
+                    lower=x_min, upper=x_max, .var="x")
+use_consonance <- function(d) {
+  d %>% test_consonance(suite_consonance)
+}
+```
+
+Using base R, we can define two implementations: one that does not perform any
+ tests at all, and one that uses a series of `stopifnot` conditions.
+
+```{r}
+use_none <- function(d) invisible(d)
+use_base_R <- function(d) {
+  stopifnot(is.character(d$id))
+  stopifnot(all(nchar(d$id) > 0))
+  stopifnot(is.numeric(d$x))
+  xrange <- range(d$x)
+  stopifnot(xrange[1] >= x_min & xrange[2] <= x_max)
+  invisible(d)
+}
+```
+
+Using the `checkmate` package, the implementation is similar to base R, but
+replaces `stopifnot` by package functions.
+
+```{r}
+use_checkmate <- function(d) {
+  assert_character(d$id, min.chars=1)
+  assert_numeric(d$x, lower=x_min, upper=x_max)
+  invisible(d)
+}
+```
+
+Using the `assertr` package, we can define a chain of tests (which is similar
+to a suite) and invoke the chain on data.
+
+```{r}
+suite_assertr <- . %>%
+  chain_start %>%
+  verify(is.character(id)) %>%
+  verify(nchar(id) > 0) %>%
+  verify(is.numeric(x)) %>%
+  assert(within_bounds(x_min, x_max), x) %>%
+  chain_end
+use_assertr <- function(d) {
+  d %>% suite_assertr %>% invisible
+}
+```
+
+**Note:** The above are first-attempt implementations and they are not
+exactly equivalent. Some of the distinctions and their effect on
+performance are mentioned in the discussion at the end.
+
+
+### Outputs
+
+Before measuring run times, let's run these implementations on data to make
+sure they produce the expected outputs. The good dataset should lead to quiet
+execution.
+
+```{r}
+use_none(anscombe_good)
+use_base_R(anscombe_good)
+use_consonance(anscombe_good)
+use_checkmate(anscombe_good)
+use_assertr(anscombe_good)
+```
+
+The bad dataset should lead to messages.
+
+```{r, error=TRUE}
+use_none(anscombe_bad) # this function always returns quietly!
+use_base_R(anscombe_bad)
+use_consonance(anscombe_bad)
+use_checkmate(anscombe_bad)
+use_assertr(anscombe_bad)
+```
+
+
+### Measurements
+
+Let's measure the time necessary to perform tests on data, starting with
+the good dataset.
+
+```{r}
+runtimes_good <- microbenchmark(
+  none = try({ use_none(anscombe_good) }),
+  base_R = try({ use_base_R(anscombe_good) }),
+  checkmate = try({ use_checkmate(anscombe_good) }),
+  consonance = try({ use_consonance(anscombe_good) }),
+  assertr = try({ use_assertr(anscombe_good) }),
+  times = 500
+)
+```
+
+Next, we measure using the dataset with a faulty data item.
+
+```{r, results='hide'}
+runtimes_bad <- microbenchmark(
+  none = try({ use_none(anscombe_bad) }),
+  base_R = try({ use_base_R(anscombe_bad) }),
+  checkmate = try({ use_checkmate(anscombe_bad) }),
+  consonance = try({ use_consonance(anscombe_bad) }),
+  assertr = try({ use_assertr(anscombe_bad) }),
+  times = 500
+)
+```
+
+The measurements are available with fine detail, but the main properties
+are visible from median running times.
+
+```{r, echo=FALSE, eval=TRUE, fig.width=6.5, fig.height=1.6, dpi=300, out.width="100%"}
+# prep - ind proper time ranges
+all.times = c(split(runtimes_good$time, runtimes_good$expr),
+          split(runtimes_bad$time, runtimes_bad$expr))
+times.range = c(0, max(sapply(all.times, quantile, p=0.5)))
+# draw the two sets of results
+oldpar <- par()
+par(mfrow=c(1,2))
+plot_runtimes(runtimes_good, xlim=times.range, corner="A",
+              main="Good data - all criteria pass",
+              )
+plot_runtimes(runtimes_bad, xlim=times.range, corner="B",
+              main="Bad data - one criterion fails")
+newpar <- par(oldpar)
+```
+
+The bars show time, so lower is better; both charts have the same
+scale on the x-axis. The results show that processing a non-problematic
+dataset is fast compared to detecting
+errors. The infrastructure provided by `consonance` slows it down
+compared to base R, but performance seems competitive compared to
+the `assertr` framework.
+
+
+## Discussion {#discussion}
+
+In the context of data quality control, run-time performance sits in an
+uncomfortable position. On the one hand, performance should not be a primary
+concern because a limited amount of time spent on quality control can prevent
+time-consuming debugging. On the other hand, if checks impose noticeable
+slowdown, that can discourage the adoption of those steps.
+The presented results show that the `consonance` package introduces
+some overhead compared to tests implemented in base R, but that it nonetheless
+executes faster than other frameworks.
+
+The presented measurements are guidelines only, and there are important
+caveats to interpreting the benchmark data. Beside the well-known
+difficulties in assessing running time of code components and the limited range
+of the benchmark conditions, it is important to emphasize that the tested
+pipelines actually provide distinct features.
+
+First, implementations labeled as 'base R' and 'checkmate' apply criteria in a
+sequential manner and abort at the first error. In contrast, implementations
+'consonance' and 'assertr' assess all criteria and report a summary of all
+failures. This bookkeeping is not a major factor on running time in the above
+examples because the failure in the bad dataset occurs in the last-defined
+criterion. But the bookkeeping explains why `consonance` and `assertr` require
+longer to execute. In practical situations, reporting all problems at once can
+be a time-saver in the long-run.
+
+Second, the implementations differ in the flexibility and the detail provided
+in the log or failure messages. In this regard, `assertr` provides a full
+report of individual data records that do not meet the criteria. Thus,
+although it is slower, it provides the most granular output.
+
+Overall, the `consonance` package offers a middle ground in terms of
+performance between simple testing and the `assertr` package. This can be
+evaluated alongside the requirements for other features to choose an
+appropriate framework for a given project.
+
+
+
+## Appendix
+
+```{r}
+sessionInfo()
+```
+

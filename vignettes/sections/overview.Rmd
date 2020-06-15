@@ -1,0 +1,69 @@
+## Overview {#overview}
+
+This section gives a preview of the `consonance` package. To start,
+let's create a test suite that requires data vectors to be numeric.
+
+```{r}
+library(consonance)
+library(checkmate)
+suite_1 <-
+  consonance_suite() +
+  consonance_assert("numeric vector", assert_numeric)
+```
+
+The first two lines load packages `consonance` and `checkmate`. The latter
+provides many fast functions designed for checking arguments.
+Next in the code block, the definition of `suite_1` is a
+sum of two components. The first is an empty consonance suite created by
+`consonace_suite()`. The plus sign and function `consonance_assert()` augment
+the suite with a new assertion. Its description, `"numeric vector"`,  is meant
+to distinguish this component from any additional ones. The implementation of the
+assertion is provided by `assert_numeric` from the `checkmate` package.
+
+To use the `suite_1` object, we invoke the `test_consonance` function. Here are
+some examples.
+
+```{r, error=TRUE}
+# Testing character vectors results in quiet execution
+test_consonance(c(1, 2), suite_1)
+test_consonance(c(1, 2, NA), suite_1)
+# Testing a non-character vector results in messages
+test_consonance(c("a", "b"), suite_1)
+```
+
+All examples provide `test_consonance` with a data vector and our test suite.
+The first two lines succeed quietly because their data vectors are composed
+of numbers. The last line signals that the data is not in agreement, i.e.
+not in consonance, with the properties defined in the suite.
+
+Of course, testing that a vector is numeric can be achieved with one
+line of code in base R. A more useful suite might combine more conditions.
+For example, we can check data type and names.
+
+```{r}
+suite_2 <-
+  consonance_assert("numeric vec wo NAs", assert_numeric, any.missing=FALSE) +
+  consonance_assert("named", assert_named)
+```
+
+The first `consonance_assert` definition here includes an additional argument.
+This is passed to the assertion functions, i.e. to `assert_numeric` from the
+`checkmate` package, and here imposes a constraint that data should not
+include any missing values. We can try the suite on some data, this time
+using the `dplyr` syntax.
+
+```{r, error=TRUE}
+library(dplyr)
+# Numeric vectors with names result in quiet execution
+c(a=1, a=2) %>% test_consonance(suite_2)
+# Numeric vectors without names result in error messages
+c(1, 2) %>% test_consonance(suite_2)
+# Vectors with missing data result in error messages
+c(a=1, b=NA) %>% test_consonance(suite_2)
+```
+
+The convenience of the `consonance` workflow becomes even more
+apparent when performing long series of tests, testing more complex objects
+like data frames or models, logging output, and toggling strictness of
+individual requirements.
+

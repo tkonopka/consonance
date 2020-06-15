@@ -1,0 +1,90 @@
+/** plot style for consonance and anscombe plots **/
+
+
+
+/** for anscombe scatter plots **/
+par {
+    ps: 10;
+    mai: 0.2 0.2 0.1 0.15;
+    mgp: 0 0 0;
+}
+plot {
+    type: n;
+    axes: FALSE;
+    frame: FALSE;
+    xlab: ;
+    ylab: ;
+    main: ;
+}
+box {
+    lwd: 0.5;
+}
+axis {
+    las: 1;
+    tck: -0.02;
+    cex.axis: 0.9;
+}
+axis.x {
+    line: -0.1;
+}
+axis.y {
+    line: 0.2;
+}
+lines {
+    lwd: 1;
+    col: #a49694;
+}
+points {
+    pch: 21;
+    cex: 1.2;
+    lwd: 0.5;
+    col: #44968c;
+    bg: #64b6ac;
+}
+mtext.main {
+    adj: 0;
+}
+mtext.x {
+    line: 0.8;
+}
+mtext.y {
+    line: 1.0;
+}
+
+text.corner {
+    cex: 1.3;
+    font: 2;
+}
+
+
+
+/** for runtimes barplots **/
+
+par.runtimes {
+    mai: 0.35 0.7 0.2 0.1;
+}
+barplot {
+    col: #44968c;
+    border: NA;
+    las: 1;
+    axes: FALSE;
+    horiz: TRUE;
+    offset: 1;
+}
+lines.runtimes {
+    col: #44968c;
+    lwd: 1;
+}
+axis.runtimes.y {
+    lwd: 0;
+}
+axis.runtimes.x {
+    tck: -0.02;
+}
+mtext.runtimes.x {
+    line: 0.8;
+}
+mtext.runtimes.main {
+    line: 0.1;
+}
+
