@@ -126,12 +126,16 @@ evaluate_suite <- function(results, logger) {
 #'
 #'
 test_consonance <- function(x, suite,
-                            skip=FALSE,
+                            skip=FALSE, skip.action=c("log", "none"),
                             logging.level=NULL,
                             log.file=NA) {
 
+  skip.action <- match.arg(skip.action)
+  if (skip & skip.action=="none")
+    return(invisible(x))
+
   # get a suite object - either from argument or an attachment
-  suite = get_attached_consonance(suite)
+  suite <- get_consonance_suite(suite)
   if (!is(suite, "consonance_suite"))
     stop(paste0("object '", suite, "' is not a consonance suite\n"))
   # establish a logger for this group of tests

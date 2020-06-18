@@ -4,7 +4,14 @@
 \alias{test_consonance}
 \title{check consonance of an object with a suite of tests}
 \usage{
-test_consonance(x, suite, skip = FALSE, logging.level = NULL, log.file = NA)
+test_consonance(
+  x,
+  suite,
+  skip = FALSE,
+  skip.action = c("log", "none"),
+  logging.level = NULL,
+  log.file = NA
+)
 }
 \arguments{
 \item{x}{data object}

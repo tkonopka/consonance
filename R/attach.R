@@ -49,9 +49,11 @@ attach_consonance <- function(object, suite) {
 #' @param obj list-like object
 #'
 #' @return consonance suite, or character to signal bad input
-get_attached_consonance <- function(obj) {
+get_consonance_suite <- function(obj) {
   if (is(obj, "consonance_suite"))
     return(obj)
+  if (is(obj, "consonance_test"))
+    return(consonance_suite() + obj)
   if ("consonance" %in% names(obj)) {
     result <- obj$consonance
     if (is(result, "consonance_suite"))

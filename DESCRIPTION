@@ -17,9 +17,9 @@ BugReports: https://github.com/tkonopka/consonance/issues
 LazyData: true
 Suggests:
     assertr,
-    dplyr,
     checkmate,
     knitr,
+    magrittr,
     microbenchmark,
     rmarkdown,
     Rcssplot (>= 1.0),

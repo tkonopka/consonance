@@ -2,6 +2,7 @@
 
 Consonance means [accord or agreement](https://www.dictionary.com/browse/consonance).
 
+**To do:** Background, links to related packages, etc.
 
 The next section in this vignette contains a quick [overview](#overview)
 of the package. This is useful to get an idea of the syntax. The following
@@ -10,3 +11,4 @@ package features. The section on [use cases](#usecases) outlines three different
 ways to apply the package in practice. These scenarios cover software
 development as well as data analysis. A separate vignette quantifies the
 cost of incorporating consonance testing in terms of running time.
+

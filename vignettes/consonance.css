@@ -61,8 +61,12 @@ text.corner {
 /** for runtimes barplots **/
 
 par.runtimes {
-    mai: 0.35 0.7 0.2 0.1;
+    mai: 0.35 0.9 0.2 0.25;
 }
+par.runtimes.longnames {
+    mai: 0.35 1.1 0.2 0.05;
+}
+
 barplot {
     col: #44968c;
     border: NA;

@@ -25,7 +25,8 @@ plot_anscombe <- function(d, xlab="", ylab="", main="") {
 # expects a data frame from microbenchmark
 plot_runtimes <- function(d, xlim=c(0, max(d)),
                           main="", corner="",
-                          xlab="median running times (micro-sec.)") {
+                          xlab="median running times (micro-sec.)",
+                          Rcssclass=NULL) {
   d <- as.data.frame(d)
   d.labels <- rev(as.character(levels(d$expr)))
   # convert from nanosecond to microseconds
@@ -35,7 +36,7 @@ plot_runtimes <- function(d, xlim=c(0, max(d)),
   d.q75 <- sapply(d.values, quantile, p=0.75)[d.labels]
 
   RcssCompulsoryClass <- "runtimes"
-  par()
+  par(Rcssclass=Rcssclass)
   y <- barplot(d.medians, xlim=xlim/n, names=FALSE)
   axis(1, Rcssclass="x")
   axis(2, labels=gsub("_", " ", d.labels), at=y[,1], Rcssclass="y")

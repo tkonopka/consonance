@@ -14,6 +14,7 @@ vignette: >
 
 ```{r, echo=FALSE}
 suppressMessages(library(Rcssplot))
+suppressMessages(library(magrittr))
 source("plot_consonance.R")
 ```
 

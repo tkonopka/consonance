@@ -1,12 +1,12 @@
 ## User's guide {#guide}
 
 This section introduces more features of the `consonance` package.
-Code examples require the following packages.
+As in the overview sections, code examples require the following packages.
 
 ```{r}
 library(consonance)
 library(checkmate)
-library(dplyr)
+library(magrittr)
 ```
 
 For concreteness, we will use the `anscombe` dataset available with base R.
@@ -39,8 +39,7 @@ newpar <- par(oldpar)
 ```
 
 In this section, we will set up consonance suites for this data and for
-regression models based on these four patterns.
-
+regression models.
 
 
 ### Data consonance
@@ -86,19 +85,39 @@ datasets$A %>% test_consonance(suite_numeric_df)
 To observe a failed test, we can apply the suite on a corrupted data frame.
 
 ```{r, error=TRUE}
-temp <- datasets$A
-temp$x[2] = NA
-temp %>% test_consonance(suite_numeric_df)
+temp_df <- datasets$A
+temp_df$x[2] = NA
+temp_df %>% test_consonance(suite_numeric_df)
 ```
 
 The error messages indicate the corrupt data was detected, as intended.
 
 
+#### Lists and other objects
 
-#### Objects
+The approach described above to test columns in data frames also applies to
+components in arbitrary objects or lists.
 
+```{r, error=TRUE}
+# a list object with miscellaneous components, including $x and $y
+temp_list_A <- list(x=c(1, 2, 3), y=c(1, 2), comment="x and y numeric")
+# testing temp_list_A should execute quietly
+temp_list_A %>% test_consonance(suite_numeric_df)
+# another list object with a y component that is not numeric
+temp_list_B <- list(x=c(1, 2), y=factor(c(1, 2)), comment="y is not numeric")
+# testing temp_list_B should generate messages
+temp_list_B %>% test_consonance(suite_numeric_df)
+```
 
-
+Although `temp_list_A` and `temp_list_B` are not data frames, the suite
+of tests `suite_numeric_df` applies the criteria to components `x` and `y`
+just as before. But it is important to disclose
+that the `.var` argument in the test constructors only work one-level
+deep. It is not possible to specify deep lookups via the constructor, i.e.
+it is not possible to request that a test extract component x from
+an object, then extract a sub-component x2, and check properties of the
+sub-component. To implement such logic, it is necessary to define a
+custom assertion.
 
 
 ### Custom assertions
@@ -140,8 +159,6 @@ to the figure). This is not a purely conceptual exercise: if a step in the
 analysis relies on `smooth.spline` to fit a model, the x-coordinates will
 need to have at least three unique positions for spline nodes. This
 procedure detects that smoothing splines will not be feasible for dataset "D".
-
-
 
 
 ### Terminology: assert, check, test, expect
@@ -197,7 +214,6 @@ function style and stick with it.
 with similar meanings. These do not have precise analog in the package.
 
 
-
 ### Importance levels
 
 We have seen that `test_consonanace` can generate error messages and halt
@@ -247,13 +263,11 @@ Note that the last example generates only warnings and allows execution
 to continue.
 
 
-
 ### Model consonance
 
-The package enables attaching a consonance suite to R's 'S3' object, for
-example to outputs from `lm`, `glm`, or other modeling frameworks. To
-demonstrate this, let's create a regression model for the second `anscombe`
-series.
+The package enables attaching a consonance suite to any R object, for example
+to outputs from `lm`, `glm`, or other modeling frameworks. To demonstrate
+this, let's create a regression model for the second `anscombe` series.
 
 ```{r}
 B_lm <- lm(y~x, data=datasets$B)
@@ -302,8 +316,6 @@ a prediction. This is because the assertion in `suite_lm` was defined with
 prediction is made.
 
 
-
-
 ### Logging
 
 By default, `test_consonance` does not generate output when
@@ -346,8 +358,4 @@ latter is as follows.
 # the verbose suite would normally display messages in the console
 test_consonance(c("a", "b"), suite_verbose, log.file="my-log.log")
 ```
-
-*Note:* If a consonance suite were to fail while using a file-based logger,
-messages would appear only in the file and not in the console. Execution
-would nonetheless be halted.
 

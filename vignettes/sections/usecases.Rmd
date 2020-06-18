@@ -1,8 +1,89 @@
 ## Use cases {#usecases}
 
+As mentioned in the introduction, the `consonance` package uses capabilities
+provided by the base R environment and existing packages to make it easier
+to define, maintain, and deploy quality controls for data. While the user's
+guide introduced these features one at a time, here we can look at practical
+use cases. These scenarios are relevant to software development, data
+analysis by one analyst, and deploying models for others to use.
+
+
 ### Argument checking
+
+Function definitions often implement (or should implement) some checks on
+their arguments. This sometimes leads to duplicated code when a family of
+functions may need to test arguments for the same conditions. At the same
+time, some functions may need to operate both in 'safe-mode' with tests
+activated and in a 'fast-mode' with tests turned off. Both these issues
+can be address with consonance testing: by re-using one suite of tests
+in more than one custom function, and by providing a switch to execute or to
+skip testing.
+
+```{r, echo=TRUE, eval=FALSE}
+# pseudo-code
+suite_arguments <- ...
+custom_function_1 <- function(x, skip.qc=FALSE) {
+  test_consonance(x, suite_arguments, skip=skip.qc)
+  # work for custom function 1
+}
+custom_function_2 <- function(x, skip.qc=FALSE) {
+  test_consonance(x, suite_arguments, skip=skip.qc)
+  # work for custom function 2
+}
+```
+
 
 ### Data quality control
 
-### Model applicability
+Consonance testing can act as a tool to help investigate state during
+the course of a pipeline and to log progress.
+
+```{r, echo=TRUE, eval=FALSE}
+# pseudo-code for a hypothetical pipeline - standard use
+large_data %>%
+  test_consonance(suite_pipeline) %>%
+  work_on_data_1 %>%
+  test_consonance(suite_pipeline) %>%
+  work_on_data_2
+# edits to pseudo-code for debugging
+large_data %>%
+  test_consonance(suite_pipeline, skip=TRUE) %>%
+  work_on_data_1 %>%
+  test_consonance(suite_pipeline, logging.level="INFO") %>%
+  work_on_data_2
+```
+
+Note that stages in the pipeline with consonance testing can be easily
+skipped using the `skip` argument, made more-or-less verbose using logging,
+or entirely added/removed with no side effects on the remaining pipeline
+workflow.
+
+
+### Model and data applicability
+
+Attaching a consonance suite to a model allows a data scientist help
+end-users apply the model within its intended range of applicability.
+Consonance suites can be included with any model, saved into an `Rda` file
+using `save`, and applied in new R sessions.
+
+```{r, echo=TRUE, eval=FALSE}
+# pseudo-code for modeler
+model <- train_a_model_on_data(large_data)
+model$consonance <- suite_for_model
+save(model, file="model.Rda")
+# pseudo-code for end-user
+load("model.Rda")
+new_data %>% test_consonance(model) %>% predict(object=model)
+```
+
+This is particularly useful to raise warnings for data that is technically
+well-formatted, but may not adhere to the assumptions made during model
+training.
+
+A related application is to include a test suite with a dataset that is
+distributed for re-analysis. Before an existing dataset is integrated or
+jointly analyzed with new data, a test suite associated with the original
+dataset can signal whether or not the new data has compatible properties.
+Unlike for models, however, this use case requires distribution of a test
+suite or data-merging toolkit that is separate from the data.
 

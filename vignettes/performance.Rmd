@@ -14,6 +14,8 @@ vignette: >
 
 ```{r, echo=FALSE}
 suppressMessages(library(Rcssplot))
+library(checkmate)
+suppressMessages(library(assertr))
 source("plot_consonance.R")
 ```
 
@@ -41,8 +43,9 @@ package is competitive compared to alternatives.
 
 Code in this vignette relies on the following packages.
 
-```{r}
-library(dplyr)
+```{r, results="hide"}
+library(magrittr)
+library(assertthat)
 library(checkmate)
 library(assertr)
 library(consonance)
@@ -96,10 +99,11 @@ then invoke this suite on data.
 
 ```{r}
 suite_consonance <-
-  consonance_assert("id single char", assert_character,
-                    min.chars=1, .var="id") +
-  consonance_assert("x in bounds", assert_numeric,
-                    lower=x_min, upper=x_max, .var="x")
+  consonance_test("id single char", test_character,
+                  min.chars=1, .var="id") +
+  consonance_test("x in bounds", test_numeric,
+                  lower=x_min, upper=x_max, .var="x")
+
 use_consonance <- function(d) {
   d %>% test_consonance(suite_consonance)
 }
@@ -120,8 +124,22 @@ use_base_R <- function(d) {
 }
 ```
 
-Using the `checkmate` package, the implementation is similar to base R, but
+Using the `assertthat` package, the implementation is similar to base R, but
 replaces `stopifnot` by package functions.
+
+```{r}
+use_assertthat <- function(d) {
+  assert_that(is.character(id), env=d)
+  assert_that(all(nchar(id) > 0), env=d)
+  assert_that(is.numeric(x), env=d)
+  assert_that(min(x) >= x_min & max(x) <= x_max, env=d)
+  invisible(d)
+}
+```
+
+Using the `checkmate` package, the implementation is similar to base R, but
+replaces `stopifnot` by package functions. Assertions on one variable can
+include several criteria at once.
 
 ```{r}
 use_checkmate <- function(d) {
@@ -159,9 +177,10 @@ sure they produce the expected outputs. The good dataset should lead to quiet
 execution.
 
 ```{r}
+use_consonance(anscombe_good)
 use_none(anscombe_good)
 use_base_R(anscombe_good)
-use_consonance(anscombe_good)
+use_assertthat(anscombe_good)
 use_checkmate(anscombe_good)
 use_assertr(anscombe_good)
 ```
@@ -169,9 +188,11 @@ use_assertr(anscombe_good)
 The bad dataset should lead to messages.
 
 ```{r, error=TRUE}
-use_none(anscombe_bad) # this function always returns quietly!
-use_base_R(anscombe_bad)
+# using consonance package
 use_consonance(anscombe_bad)
+# using alternative methods
+use_base_R(anscombe_bad)
+use_assertthat(anscombe_bad)
 use_checkmate(anscombe_bad)
 use_assertr(anscombe_bad)
 ```
@@ -179,13 +200,14 @@ use_assertr(anscombe_bad)
 
 ### Measurements
 
-Let's measure the time necessary to perform tests on data, starting with
+Let's measure the time necessary to perform the tests, starting with
 the good dataset.
 
 ```{r}
 runtimes_good <- microbenchmark(
   none = try({ use_none(anscombe_good) }),
   base_R = try({ use_base_R(anscombe_good) }),
+  assertthat = try({ use_assertthat(anscombe_good) }),
   checkmate = try({ use_checkmate(anscombe_good) }),
   consonance = try({ use_consonance(anscombe_good) }),
   assertr = try({ use_assertr(anscombe_good) }),
@@ -199,6 +221,7 @@ Next, we measure using the dataset with a faulty data item.
 runtimes_bad <- microbenchmark(
   none = try({ use_none(anscombe_bad) }),
   base_R = try({ use_base_R(anscombe_bad) }),
+  assertthat = try({ use_assertthat(anscombe_bad) }),
   checkmate = try({ use_checkmate(anscombe_bad) }),
   consonance = try({ use_consonance(anscombe_bad) }),
   assertr = try({ use_assertr(anscombe_bad) }),
@@ -209,17 +232,16 @@ runtimes_bad <- microbenchmark(
 The measurements are available with fine detail, but the main properties
 are visible from median running times.
 
-```{r, echo=FALSE, eval=TRUE, fig.width=6.5, fig.height=1.6, dpi=300, out.width="100%"}
+```{r, echo=FALSE, eval=TRUE, fig.width=6.5, fig.height=1.8, dpi=300, out.width="100%"}
 # prep - ind proper time ranges
-all.times = c(split(runtimes_good$time, runtimes_good$expr),
+all.times <- c(split(runtimes_good$time, runtimes_good$expr),
           split(runtimes_bad$time, runtimes_bad$expr))
-times.range = c(0, max(sapply(all.times, quantile, p=0.5)))
+times.range <- c(0, max(sapply(all.times, quantile, p=0.5)))
 # draw the two sets of results
 oldpar <- par()
 par(mfrow=c(1,2))
 plot_runtimes(runtimes_good, xlim=times.range, corner="A",
-              main="Good data - all criteria pass",
-              )
+              main="Good data - all criteria pass")
 plot_runtimes(runtimes_bad, xlim=times.range, corner="B",
               main="Bad data - one criterion fails")
 newpar <- par(oldpar)
@@ -231,6 +253,61 @@ dataset is fast compared to detecting
 errors. The infrastructure provided by `consonance` slows it down
 compared to base R, but performance seems competitive compared to
 the `assertr` framework.
+
+
+### Measurements with skipped tests
+
+As a final exploration, let's consider performance in situations when the
+data is expected to be consonant. This can arise when the data has already
+been checked and repeat-testing is redundant.
+
+Implementing test-skipping in base R involves wrapping the tests inside
+an 'if' condition. The `consonance` package implements a dedicated argument
+so that this feature does not require any extra lines of code.
+
+```{r}
+use_base_R_skip <- function(d, skip=FALSE) {
+  if (!skip) use_base_R(d)
+  invisible(d)
+}
+use_consonance_skip <- function(d, skip=FALSE, skip.action="log") {
+  # note this avoids the pipe operator.
+  # This makes the function more comparable to base R, but not comparable
+  # to the original use_consonance in previous section.
+  test_consonance(d, suite_consonance,
+                  skip=skip, skip.action=skip.action)
+}
+```
+
+We can now collect measurements (only on the good dataset because we
+are assuming that test-skipping is justified).
+
+```{r}
+runtimes_skip <- microbenchmark(
+  none = use_none(anscombe_good),
+  base_R = use_base_R_skip(anscombe_good, skip=FALSE),
+  base_R_skip_quiet = use_base_R_skip(anscombe_good, skip=TRUE),
+  consonance = use_consonance_skip(anscombe_good, skip=FALSE),
+  consonance_skip_log = use_consonance_skip(anscombe_good, skip=TRUE,
+                                            skip.action="log"),
+  consonance_skip_quiet = use_consonance_skip(anscombe_good, skip=TRUE,
+                                              skip.action="none"),
+  times = 500
+)
+```
+
+```{r, echo=FALSE, eval=TRUE, fig.width=6.5, fig.height=1.8, dpi=300, out.width="100%"}
+skip.times <- split(runtimes_skip$time, runtimes_skip$expr)
+skip.range <- c(0, max(sapply(skip.times, quantile, p=0.5)))
+oldpar <- par()
+par(mfrow=c(1,2))
+plot_runtimes(runtimes_skip, xlim=skip.range, corner="",
+              main="Test skipping", Rcssclass="longnames")
+newpar <- par(oldpar)
+```
+
+Note that for larger datasets, the running times for the two consonance
+approaches that skip tests would remain constant.
 
 
 ## Discussion {#discussion}
@@ -250,7 +327,8 @@ difficulties in assessing running time of code components and the limited range
 of the benchmark conditions, it is important to emphasize that the tested
 pipelines actually provide distinct features.
 
-First, implementations labeled as 'base R' and 'checkmate' apply criteria in a
+First, implementations labeled as 'base R', 'assertthat', and 'checkmate' apply
+criteria in a
 sequential manner and abort at the first error. In contrast, implementations
 'consonance' and 'assertr' assess all criteria and report a summary of all
 failures. This bookkeeping is not a major factor on running time in the above
