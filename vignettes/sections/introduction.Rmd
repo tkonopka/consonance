@@ -1,14 +1,41 @@
 ## Introduction
 
 Consonance means [accord or agreement](https://www.dictionary.com/browse/consonance).
+Package `consonance` uses this term in the context of data analysis to
+convey that a dataset passes a set of criteria and that, for example, the
+dataset can progress to statistical analysis. The package aims to facilitate
+tracking and checking quality control criteria by providing a set of
+convenience functions that are straightforward to apply on arbitrary data and
+to incorporate in existing analysis pipelines.
 
-**To do:** Background, links to related packages, etc.
+Quality control in data analysis can be thought of in terms of individual
+components, or in terms of how those components interact with one another.
+In software development, unit testing is an effective technique for tracking
+that functions or packages perform their tasks correctly. The `testthat`
+package is a leading toolkit in this regard in the R ecosystem. When working
+with data, packages like `assertthat`, `checkmate`, and `assertr`, among others,
+offer varying combinations of features. `assertthat` and `checkmate`
+focus on testing individual variables. `assertr` in contrast also provides
+tools to test entire datasets, for example for outliers. In addition, these
+packages are quite flexible and can be extended in many ways. But the use of
+quality controls in everyday analysis is still not as commonplace as
+unit-testing is in software development, and this may be in part due to the
+usability of the available tools.
 
-The next section in this vignette contains a quick [overview](#overview)
-of the package. This is useful to get an idea of the syntax. The following
-section with the [user's guide](#guide) includes more details on all the
-package features. The section on [use cases](#usecases) outlines three different
-ways to apply the package in practice. These scenarios cover software
+Package `consonance` provides an alternative framework for building suites
+of tests on datasets. Its focus is on grouping tests into suites, which
+can be easily set up, maintained, and applied on data. Other features
+include the ability to attach test to model objects, define tests at varying
+levels of severity, and log outcomes. The framework can be thought of as a
+layer for managing `assertthat` or `checkmate` tests. Or, it
+can be thought of as an alternative syntax for `assertr` test chains.
+
+The next section in this vignette contains an [overview](#overview)
+of the package; this serves to introduce the syntax and show minimal
+working examples. The following section with the
+[user's guide](#guide) provides more details on all the
+package features. The section on [use cases](#usecases) shows templates
+for three different ways to apply the package in practice. These scenarios cover software
 development as well as data analysis. A separate vignette quantifies the
 cost of incorporating consonance testing in terms of running time.
 

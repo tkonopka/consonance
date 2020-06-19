@@ -7,7 +7,7 @@ Author: Tomasz Konopka [aut, cre]
 Maintainer: Tomasz Konopka <tokonopka@gmail.com>
 Description: Consonance testing.
 Depends:
-    R (>= 3.4.0)
+    R (>= 3.5.0)
 Imports:
     log4r,
     methods
@@ -17,6 +17,7 @@ BugReports: https://github.com/tkonopka/consonance/issues
 LazyData: true
 Suggests:
     assertr,
+    assertthat,
     checkmate,
     knitr,
     magrittr,

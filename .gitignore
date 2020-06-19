@@ -1,10 +1,13 @@
-## temporary files 
-*.idea
+## temporary files
 *~
 *.tex
 *.aux
 *.log
 *.out
+
+## local files
+.idea
+local
 
 ## vignettes & graphics
 *.png

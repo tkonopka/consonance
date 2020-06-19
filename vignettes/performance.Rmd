@@ -24,17 +24,14 @@ source("plot_consonance.R")
 ## Introduction
 
 The `consonance` package provides a framework for performing quality control
-on datasets and models. The primary vignette for the package provides
-background and explains usage. This vignette is a supplement that compares
-the package to other approaches for testing data.
+on datasets and models. This vignette compares the performance (running time)
+of consonance tests to other approaches for testing data.
 
-As a word of caution, the comparison presented below is not exhaustive.
-However, it includes approaches implemented using only base R and
-some using external packages `checkmate` and `assertr`. Moreover,
-performance measurements are only carried out on a single dataset, so they
-cannot be taken as representative of all use cases. These caveats
-notwithstanding, the comparison conveys that the `consonance`
-package is competitive compared to alternatives.
+As a word of caution, the comparison presented below includes approaches
+implemented using only base R and some using external packages `checkmate` and
+`assertr`, but it cannot be considered exhaustive or complete. Moreover,
+measurements are only carried out on a single dataset, so they cannot be
+taken as representative of all use cases.
 
 
 

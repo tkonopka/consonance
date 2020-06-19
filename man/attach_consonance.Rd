@@ -23,8 +23,8 @@ attach a consonance object to an existing model
 xy <- data.frame(x=1:10, y=1:10)
 xy.lm <- lm(y~x, data=xy)
 suite <- consonance_suite() +
-   consonance_assert("x numeric", assert_numeric)
-xy.model = attach_consonance(xy.lm, suite)
+   consonance_test("x numeric", is.numeric)
+xy.model <- attach_consonance(xy.lm, suite)
 
 # preview that the test suite is attached to the model
 xy.model$consonance

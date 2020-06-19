@@ -275,8 +275,8 @@ B_lm
 ```
 
 As the plot at the start of the section shows, a linear regression is a
-reasonable first approximation for the series. But the series is actually
-better modeled by a parabola; it would be a mistake to use the linear model
+reasonable first approximation for the series, but the data is actually
+better modeled by a parabola. It would be a mistake to use the linear model
 outside the x-range used to fit the model. So let's create a suite of
 tests to capture this reasoning.
 
@@ -292,9 +292,13 @@ We can now attach the suite to the model.
 B_lm_2 <- attach_consonance(B_lm, suite_lm)
 ```
 
-(This is actually just a long-form syntax, and the same result can be achieved
-by setting `B_lm_2$consonance <- suite_lm`.) The power of this step is that
-we can now use the model to perform data consonance checks.
+The suite can be previewed through the `$consonance` component of the object.
+
+```{r}
+B_lm_2$consonance
+```
+
+We can now use the model to perform data consonance checks.
 
 ```{r}
 # prediction on x-coordinates within the model range

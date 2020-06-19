@@ -1,0 +1,34 @@
+---
+title: Consonance testing for models
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Regression}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+```{r, child=file.path("sections", "styles.Rmd")}
+```
+
+```{r, echo=FALSE}
+suppressMessages(library(Rcssplot))
+library(checkmate)
+source("plot_consonance.R")
+```
+
+
+
+## Introduction
+
+
+## Multiple regression
+
+
+## Appendix
+
+```{r}
+sessionInfo()
+```
+

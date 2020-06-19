@@ -16,8 +16,8 @@
 #' xy <- data.frame(x=1:10, y=1:10)
 #' xy.lm <- lm(y~x, data=xy)
 #' suite <- consonance_suite() +
-#'    consonance_assert("x numeric", assert_numeric)
-#' xy.model = attach_consonance(xy.lm, suite)
+#'    consonance_test("x numeric", is.numeric)
+#' xy.model <- attach_consonance(xy.lm, suite)
 #'
 #' # preview that the test suite is attached to the model
 #' xy.model$consonance
@@ -36,10 +36,51 @@ attach_consonance <- function(object, suite) {
     warning(paste0("object already includes consonance checks\n",
                    "existing check will be replaced by new test suite"))
   }
-  object$consonance <- suite
-  object
+  result <- object
+  result$consonance <- suite
+  # re-assign the function environemnts so that the suite functions
+  # can make use of variables defined within the object
+  result.env <- list2env(result)
+  for (i in seq_along(suite$tests)) {
+    environment(result$consonance$tests[[i]]$fun) <- result.env
+  }
+  result
 }
 
+
+#' detach a suite from an object
+#'
+#' @export
+#' @param object an object that includes a consonance suite
+#'
+#' @return consonance suite that is not attached to an object
+#'
+#' @examples
+#'
+#' # first attach a suite to a model
+#' xy <- data.frame(x=1:10, y=1:10)
+#' xy.lm <- lm(y~x, data=xy)
+#' suite <- consonance_suite() +
+#'    consonance_test("x numeric", is.numeric)
+#' xy.model <- attach_consonance(xy.lm, suite)
+#' xy.model$consonance
+#'
+#' # detach the suite from the model
+#' suite_2 <- detach_consonance(xy.model)
+#'
+#' # note: to obtain the model without the suite, set the component to NULL
+#' xy.model$consonance <- NULL
+#'
+detach_consonance <- function(object) {
+  if (!"consonance" %in% names(object)) {
+    stop("object does not contain a consonance suite\n")
+  }
+  result <- object$consonance
+  for (i in seq_along(object$consonance$tests)) {
+    environment(result$tests[[i]]$fun) <- globalenv()
+  }
+  result
+}
 
 
 #' extract a consonance object from a composite object

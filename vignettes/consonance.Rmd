@@ -26,8 +26,8 @@ data with a processing pipeline.
 
 Several R packages already provide frameworks for unit testing,
 argument checking, and assertions. Package `consonance` provides an
-intermediate layer between practical data analysis and those core frameworks.
-Its unique features include:
+intermediate layer that links practical data analysis to those core
+frameworks. Its unique features include:
 
  - Tests are grouped into suites that can be re-used many times.
  - Test definitions can use established frameworks (e.g. `checkmate`) as
