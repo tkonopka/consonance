@@ -52,7 +52,7 @@ We saw in the overview how to check that data vectors are numeric.
 suite_numeric_vec <-
   consonance_suite() +
   consonance_assert("numeric vector", assert_numeric, any.missing=FALSE)
-# perform the assessment on dataset "A"
+# perform the assessment on dataset A
 datasets$A$x %>% test_consonance(suite_numeric_vec)
 datasets$A$y %>% test_consonance(suite_numeric_vec)
 ```
@@ -124,13 +124,13 @@ custom assertion.
 
 We have seen that consonance assertions can be defined using `assert_numeric`
 and `assert_named` from the `checkmate` package. Indeed, `checkmate` provides
-dozens of functions that cover many often-used criteria. All of those
-functions can be incorporated into a consonance suite. Nonetheless, there may
+dozens of functions that cover many often-used criteria, and all of them
+can be incorporated into a consonance suite. Nonetheless, there may
 arise situations where a ready-made assertion function is not available.
-In those scenarios it is possible to define a custom assertion.
+In those scenarios it is possible to define a custom function.
 
 As an example, let's suppose we want to require that a vector has at least
-three distinct values. We can define a custom function.
+three distinct values.
 
 ```{r}
 assert_n_unique <- function(x, n) {
@@ -139,7 +139,7 @@ assert_n_unique <- function(x, n) {
 }
 ```
 
-Then, we can incorporate this function into a test suite.
+Then, we can incorporate this function into a test suite using `n=3`.
 
 ```{r}
 suite_3_unique <-
@@ -154,25 +154,35 @@ datasets$A %>% test_consonance(suite_3_unique)
 datasets$D %>% test_consonance(suite_3_unique)
 ```
 
-Dataset "A" passes the consonance assessment, but dataset "D" does not (refer
-to the figure). This is not a purely conceptual exercise: if a step in the
-analysis relies on `smooth.spline` to fit a model, the x-coordinates will
-need to have at least three unique positions for spline nodes. This
-procedure detects that smoothing splines will not be feasible for dataset "D".
+Dataset A passes the assessment, but dataset D does not (refer to the
+dataset visualizations above). This is not a purely conceptual exercise: if a
+step in the analysis relies on `smooth.spline` to fit a model, the
+x-coordinates will need to have at least three unique positions for spline
+nodes. This procedure detects that smoothing splines will not be feasible for
+dataset D.
+
+Another type of custom function is described in the separate vignette on
+consonance testing for models.
 
 
-### Terminology: assert, check, test, expect
+### Terminology: assert, check, test, etc.
 
 There are several related term that appear in the literature on unit testing
-and argument checking: assert, check, test, expect. Although they are almost
-synonyms in everyday language, they can delineate precise behaviors in code.
-This is relevant when adding components into a consonance suite, and
-especially when writing custom functions.
+and argument checking: assert, check, test, expect, validate, verify, insist,
+ad perhaps others. These terms are almost synonyms in everyday language, and in
+the context of code they are sometimes used inconsistently and at other times
+delineate precise behaviors.
 
-The `consonance` package follows the same convention as package `checkmate`
-for assert, check, and test functions. Given a function `f(x)`, the three
-function types evaluate the data `x` and signal a positive (PASS) or a
-negative (FAIL) outcome. The signals are summarized below.
+The `consonance` package uses the word 'test' in a loose sense as well as in
+a precise sense. The loose sense is used in the 'consonance testing', in the
+label for a component in a suite object (e.g. `suite$tests`), and in the
+function `test_consonance`. The word is meant to convey applying criteria on
+input data.
+
+The `consonance` package also uses the terms `assert`, `check`, and `test` in
+a precise sense, following the convention described in package `checkmate`.
+Given a function `f(x)`, the three actions process an object `x` and signal
+a positive (PASS) or a negative (FAIL) outcome.
 
 | Function type | outcome: PASS | outcome: FAIL |
 | --------------| ---- | ---- |
@@ -204,14 +214,17 @@ Note that this definition involves `consonance_test` rather than
 `consonance_check`.
 
 All three function types can be used together in a single consonance suite.
-However, some unexpected may arise if a function of one type is added
+However, some puzzling behaviors may arise if a function of one type is added
 with an inappropriate constructor. It is probably a good idea to pick one
 function style and stick with it.
 
-**To do:** discuss functions of type 'expect' and package `testthat`.
-
-*Aside:* natural language also has other verbs like 'verify' and 'validate'
-with similar meanings. These do not have precise analog in the package.
+Apart from assert, check, and test, natural language also has other verbs
+with similar meanings. The `testthat` package uses 'expect', the `assertthat`
+package uses 'assert that', and the `assertr` package also uses 'verify' and
+'insist'. Unfortunately, some of those constructs serve different purposes
+than what is provided by the `consonance` package, so they do not have direct
+analogs. To mitigate potential confusion, this vignette and other docs try to
+avoid using those alternative keywords.
 
 
 ### Importance levels

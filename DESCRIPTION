@@ -1,5 +1,5 @@
 Package: consonance
-Title: Consonance testing
+Title: Consonance Testing
 Version: 0.0.1.0
 Authors@R: 
     person("Tomasz", "Konopka", , "tokonopka@gmail.com", role = c("aut", "cre"))

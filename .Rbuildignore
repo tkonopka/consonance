@@ -4,6 +4,7 @@
 .gitignore
 .git
 .idea
+local
 
 ^README
 ^LICENSE.md

@@ -72,7 +72,7 @@ test_that("test_consonance using a model with consonance suite", {
   model <- attach_consonance(xy.lm, suite)
   # make sure the suite was attached
   expect_true("consonance" %in% names(model))
-  xy.bad = data.frame(x=c(1,2,-4), y=c(2,3,4))
+  xy.bad <- data.frame(x=c(1,2,-4), y=c(2,3,4))
   # the suite should raise an error, and so should the model
   expect_error(capture_output(test_consonance(xy.bad, suite)))
   expect_error(capture_output(test_consonance(xy.bad, model)))
@@ -87,8 +87,8 @@ test_that("attaching sets function environment", {
   # function uses "a" and "b" - these should be taken from the list environment
   # at run-time
   suite <- consonance_suite() +
-    consonance_assert("[a, b]", function(x) {
-      simple_range(x, lower=a, upper=b)
+    consonance_assert("[a, b]", function(x, .model) {
+      simple_range(x, lower=.model$a, upper=.model$b)
     })
   model <- attach_consonance(mylist, suite)
   expect_silent(test_consonance(c(12, 14), model))

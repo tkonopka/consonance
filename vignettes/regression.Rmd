@@ -1,11 +1,11 @@
 ---
-title: Consonance testing for models
+title: Incorporating consonance testing in models
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Regression}
+  %\VignetteIndexEntry{Incorporating consonance testing in models}
   %\usepackage[UTF-8]{inputenc}
 ---
 
@@ -22,8 +22,292 @@ source("plot_consonance.R")
 
 ## Introduction
 
+The `consonance` package provides a framework for performing quality control.
+This vignette demonstrates how to attach a consonance test suite to a model.
+One advantage of this technique is it allows a model to be deployed together
+with its own set of quality control criteria that can be check on any data
+before computing predictions. Another advantage is that it allows the
+consonance suite to access model data during the course of a quality
+control checks.
 
-## Multiple regression
+The vignette is centered around an example of multiple regression on a
+synthetic dataset. The techniques demonstrated, however, are applicable to
+any model. Indeed, consonance suites can be attached to any list-like object.
+
+
+## Modeling data
+
+For a concrete example of a statistical model, let's work with multiple
+regression on a synthetic dataset included with the package.
+
+```{r}
+library(consonance)
+d <- consonance_model_data
+head(d, 1)
+```
+
+The dataset has `r nrow(d)` rows, one variable `y` that we will treat as an
+outcome, and and five variables `x1` through `x5` that we will consider as
+inputs. In this section we want to train regression models on this data. So let's
+split the data into parts for training and testing.
+
+```{r}
+d_train <- d[seq(1, nrow(d), by=2),]
+d_test  <- d[seq(2, nrow(d), by=2),]
+```
+
+We can explore the training set with regard to the correlations between
+variables.
+
+```{r}
+pairwise_cors <- cor(d_train)
+round(pairwise_cors, 2)
+```
+
+The outcome variable `y` is strongly or moderately correlated to each of `x1`
+through `x4`, but not to `x5`. In addition, `x2`, `x3`, and `x4` are strongly
+correlated between them. Correlations between the variables can complicate
+the [interpretation of multiple regression models](https://www.nature.com/articles/nmeth.3665), but
+they are not in themselves incompatible with the regression framework.
+
+### Training models
+
+We start modeling by including all the input variables.
+
+```{r}
+model_all <- lm(y ~ x1 + x2 + x3 + x4 + x5, data=d_train)
+coef(model_all)
+```
+
+Because the ranges of `x1` through `x5` are all similar, the model
+coefficients capture feature importance. Thus, the most important variables
+are `x1` and `x4`.
+
+Let's suppose we want to simplify the model so that it uses fewer explanatory
+variables. In practice, this might be done using lasso regularization with
+the [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html)
+package. Here, let's just create a model with two variables manually.
+
+```{r}
+model_two <- lm(y ~ x1 + x4, data=d_train)
+coef(model_two)
+```
+
+We now have two distinct models. The quality of their fit can be captured by
+the root-mean-square error.
+
+```{r}
+rmse <- function(m) { sqrt(sum(m$residual^2)) }
+c(model_all=rmse(model_all), model_two=rmse(model_two))
+```
+
+The errors are similar in magnitude, so the models provide similar fits
+for the training data.
+
+
+### Making predictions
+
+We can now use the two models to make predictions on new data `d_test`. The
+error between the predicted and the expected values summarize quality.
+
+```{r}
+predict.rmse <- function(model, data) {
+  predicted_values <- predict(model, data)
+  sqrt(sum((predicted_values-data$y)^2))
+}
+d_errors <- data.frame(dataset="d_test",
+                       model_all = predict.rmse(model_all, d_test),
+                       model_two = predict.rmse(model_two, d_test))
+d_errors
+```
+
+The errors remain about equal for the two models.
+
+Let's now consider how the quality is affected if the data is corrupted.
+In a dataset with many explanatory variables, this can occur in many
+different ways. Here, let's consider if corruption affects the variables
+that are correlated to each other.
+
+```{r}
+d_corrupt_3 <- d_corrupt_4 <- d_test
+# corrupt by reversing the values in one column
+# (this approach does not require any randomization)
+d_corrupt_3$x3 <- rev(d_corrupt_3$x3)
+d_corrupt_4$x4 <- rev(d_corrupt_4$x4)
+```
+
+We can now evaluate prediction errors on the two corrupted datasets.
+
+```{r}
+# errors for dataset with corrupted x3
+d_errors <- rbind(
+  d_errors,
+  data.frame(dataset="corrupt_3",
+             model_all = predict.rmse(model_all, d_corrupt_3),
+             model_two = predict.rmse(model_two, d_corrupt_3)),
+  data.frame(dataset="corrupt_4",
+             model_all = predict.rmse(model_all, d_corrupt_4),
+             model_two = predict.rmse(model_two, d_corrupt_4))
+)
+d_errors
+```
+
+For the model that uses all input variables, any corruption raises the
+prediction error. The model that only uses two features is unaffected by the
+first corruption, but is more affected than the  larger model in the second
+case.
+
+
+
+## Consonance testing for models
+
+We saw that regression models can make poor predictions from corrupted
+datasets. In this section, we can try to avoid that, or at least
+set off warnings if a new dataset does not conform to the training data.
+
+It is important to distinguish between two types of criteria. One type
+consists of conditions that can be formulated without reference to the
+training data. The other type is dependent more deeply on the data used
+in training. These types are called model-independent and model-dependent
+below and the distinction is important because they are implemented
+differently in the `consonance` package.
+
+
+### Model-independent consonance tests
+
+An example of model-independent criterion is the requirement that variables
+are in a well-defined range. For our dataset, all the input variables are
+in the unit range. Thus, we can create a suite of tests to check ranges
+
+```{r}
+library(checkmate)
+suite_ranges <-
+  consonance_test("x1 range", test_numeric, lower=0, upper=1, .var="x1") +
+  consonance_test("x2 range", test_numeric, lower=0, upper=1, .var="x2") +
+  consonance_test("x3 range", test_numeric, lower=0, upper=1, .var="x3") +
+  consonance_test("x4 range", test_numeric, lower=0, upper=1, .var="x4") +
+  consonance_test("x5 range", test_numeric, lower=0, upper=1, .var="x5")
+```
+
+Another type of quality control criterion might be on the correlations
+between the input variables. We saw that `x4` in the training data is
+negatively correlated with `x2` and `x3`. We can create a custom test function
+that computes correlations between pairs of variables, and then define
+consonance tests for variables `x4` and `x2` and for `x4` and `x3`.
+
+```{r}
+# custom test function
+is_cor_neg <- function(x, a=1, b=2) {
+  cor(x[[a]], x[[b]]) < 0
+}
+suite_cor <-
+  consonance_test("x2 x4 negative cor", is_cor_neg, a="x2", b="x4") +
+  consonance_test("x3 x4 negative cor", is_cor_neg, a="x3", b="x4")
+```
+
+Note that these checks are model-independent because the criteria on the
+correlations are set to be computed only from a new dataset, and the threshold
+of zero is hard-coded. Let's attach these suites to the two regression models
+from the previous section.
+
+```{r}
+model_all_A <- attach_consonance(model_all, suite_ranges + suite_cor)
+model_two_A <- attach_consonance(model_two, suite_cor + suite_ranges)
+```
+
+We can now validate the training data, test data, and the two corrupted
+datasets.
+
+```{r, error=TRUE}
+library(magrittr)
+# the training and test datasets should evaluate quietly
+d_train %>% test_consonance(model_two_A)
+d_test %>% test_consonance(model_twol_A)
+# the corrupted datasets will generate messages
+d_corrupt_3 %>% test_consonance(model_two_A)
+d_corrupt_4 %>% test_consonance(model_two_A)
+```
+
+Note that the test suites for `model_all_A` and `model_two_A` are the
+same, so repeating the above commands with the other model will produce the
+same results and error messages. Importantly, although the regression in
+`model_two_A` is only based on variables `x1` and `x4`, the test suite requires
+access to variables `x2` and `x3` in the input data.
+
+
+### Model-dependent consonance tests
+
+The previous section implemented tests that can be evaluated entirely from
+the data being tested and hard-coded criteria. It is also possible to create
+tests that use information from the model during testing. This is achieved
+via custom functions and a special function signature.
+
+For concreteness, let's again implement a test on correlations. We
+already computed the pairwise correlations between variables in the training
+data. Let's store these values within our two models.
+
+```{r}
+model_all$pairwise_cors <- pairwise_cors
+model_two$pairwise_cors <- pairwise_cors
+```
+
+Now, let's create a custom test function that will read this information.
+
+```{r}
+is_strong_cor <- function(x, .model, a="x1", b="x2") {
+  .threshold <- .model$pairwise_cors[a, b]
+  abs(cor(x[[a]], x[[b]])) > abs(.threshold)/2
+}
+```
+
+Compared to the previous function `is_cor_neg`, this function carries an extra
+argument `.model`. The name of this argument is important because it signals
+to the consonance package that this function requires access to the model
+data. The consonance package provides the model object at run-time, so the
+function body can look up the pairwise correlations matrix. In this
+implementation, the function compares a correlation in the dataset `x` with
+the corresponding correlation in the model, and it reports reports `TRUE` only
+if the correlation in `x` is at least half of the previously seen value.
+(The criterion 'at least half of the previously seen value' is an ad-hoc
+construct for the purpose of this illustrative example; a real consonance
+suite should implement a criterion that is appropriate to the data.)
+
+We can now define a test suite.
+
+```{r}
+suite_strong <-
+  consonance_test("x2 x3 strong cor", is_strong_cor, a="x2", b="x3") +
+  consonance_test("x2 x4 strong cor", is_strong_cor, a="x2", b="x4") +
+  consonance_test("x3 x4 strong cor", is_strong_cor, a="x3", b="x4")
+```
+
+Apart from having three terms rather than two, the definition syntax is
+similar as before. The next step is to attach the suite to the models.
+
+```{r}
+model_all_B <- attach_consonance(model_all, suite_ranges + suite_strong)
+model_two_B <- attach_consonance(model_two, suite_ranges + suite_strong)
+```
+
+As before, we can evaluate consonance between our original and our corrupted
+datasets with these new models.
+
+```{r, error=TRUE}
+# the training and test datasets should evaluate quietly
+d_train %>% test_consonance(model_all_B)
+d_test %>% test_consonance(model_all_B)
+# the corrupted datasets will generate messages
+d_corrupt_3 %>% test_consonance(model_all_B)
+d_corrupt_4 %>% test_consonance(model_all_B)
+```
+
+Again, we have signals that the corrupted datasets are not concordant with
+the models. The difference is that these new tests draw thresholds from a
+matrix of numbers stored within the model definitions.
+
+Other custom functions can make use of any other component in the model
+object and implement any kind of criteria. Thus, the consonance testing
+framework is versatile and powerful.
 
 
 ## Appendix

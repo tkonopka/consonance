@@ -32,22 +32,28 @@ pass_output <- list(msg="", success=TRUE, result="pass")
 #' @param conf a consonance_test
 #' @param x data object
 #' @param logger object for logging
+#' @param model list or environment object, this can be passed
+#' to consonance_test function as argument .model
 #'
 #' @return list with components msg, success, level
-evaluate_test <- function(conf, x, logger) {
+evaluate_test <- function(conf, x, logger, model=NULL) {
   var <- conf$var
   type <- conf$type
+  f <- conf$fun
   if (is.null(var)) {
     args <- c(list(x), conf$args)
   } else {
     args <- c(list(x[[var]]), conf$args)
+  }
+  if (".model" %in% names(formals(f))) {
+    args <- c(args, list(.model=model))
   }
   log_prefix <- "consonance test "
 
   # perform the test
   result <- tryCatch(
     {
-    output <- do.call(conf$fun, args)
+    output <- do.call(f, args)
     if (type=="check" & is.character(output)) {
       output <- error_fun(output)
     } else if (type=="test" & !identical(output, TRUE)) {
@@ -64,7 +70,7 @@ evaluate_test <- function(conf, x, logger) {
                     logger=logger)
   } else {
     log_fun <- logger$log_error
-    if (result$result=="warning" | conf$level=="warning") {
+    if (result$result == "warning" | conf$level == "warning") {
       log_fun <- logger$log_warn
       result$result <- "warning"
     }
@@ -113,6 +119,8 @@ evaluate_suite <- function(results, logger) {
 #' @param x data object
 #' @param suite object of class consonance
 #' @param skip logical, set to TRUE to skip all tests
+#' @param skip.action character, determines what happens when skip=TRUE.
+#' Action 'log' sends an INFO message to the logger, 'none' is silent.
 #' @param logging.level character, code to indicate logging level,
 #' leave NULL to use the logging level specified in suite constructor
 #' @param log.file character, path to log file, or leave NA to follow
@@ -123,22 +131,34 @@ evaluate_suite <- function(results, logger) {
 #'
 #' @examples
 #'
+#' # create a test or a suite with a test
+#' test_1 <- consonance_test("a numeric", is.numeric)
+#' suite_1 <- consonance_suite() + test_1
 #'
+#' # applying the test or suite on numeric data
+#' # should execute without visible output
+#' test_consonance(c(1, 2, 3), test_1)
+#' test_consonance(c(1, 2, 3), suite_1)
+#'
+#' # applying the test or suite on non-numeric data
+#' # should produce message and stop execution
+#' # test_consonance(letters, test_1)
+#' # test_consonance(letters, suite_1)
 #'
 test_consonance <- function(x, suite,
                             skip=FALSE, skip.action=c("log", "none"),
                             logging.level=NULL,
                             log.file=NA) {
 
-  skip.action <- match.arg(skip.action)
-  if (skip & skip.action=="none")
+  if (skip & match.arg(skip.action) == "none")
     return(invisible(x))
 
   # get a suite object - either from argument or an attachment
-  suite <- get_consonance_suite(suite)
-  if (!is(suite, "consonance_suite"))
-    stop(paste0("object '", suite, "' is not a consonance suite\n"))
+  suite_env <- get_consonance_suite_env(suite, parent=parent.frame())
+  if (is.null(suite_env))
+    stop(paste0("object '", substitute(suite), "' is not a consonance suite\n"))
   # establish a logger for this group of tests
+  suite <- suite_env$suite
   logger <- suite$logger
   if (!is.na(log.file)) {
     logger <- consonance_logger(suite$logger$threshold, log.file)
@@ -152,7 +172,9 @@ test_consonance <- function(x, suite,
   }
 
   # perform & log individual tests, then evaluate suite as a whole
-  result <- lapply(suite$tests, evaluate_test, x=x, logger=logger)
+  result <- lapply(suite$tests, evaluate_test,
+                   x=x, logger=logger,
+                   model=suite_env$env)
   final <- evaluate_suite(result, logger)
 
   if (final[suite$level]>0) {

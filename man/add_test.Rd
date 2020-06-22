@@ -21,7 +21,3 @@ consonance suite
 \description{
 add a new test into a consonance test suite
 }
-\examples{
-
-
-}

@@ -3,6 +3,7 @@
 #' consonance levels determine the importance of individual tests
 #'
 #' @noRd
+#' @keywords internal
 consonance_levels <- c(
   pass = 0,
   info = 1,

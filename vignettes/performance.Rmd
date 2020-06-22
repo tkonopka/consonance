@@ -1,11 +1,11 @@
 ---
-title: Consonance testing - performance
+title: Performance measurements for consonance tests
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Performance}
+  %\VignetteIndexEntry{Performance measurements for consonance tests}
   %\usepackage[UTF-8]{inputenc}
 ---
 
@@ -75,8 +75,8 @@ x_min <- min(anscombe_good$x)
 x_max <- max(anscombe_good$x)
 ```
 
-We will also need a corrupted dataset. As a simple corruption, we can
-set one of the x-coordinates to outside the intended range.
+We will also need a corrupted dataset. For this, we can set one of the
+coordinates outside the intended range.
 
 ```{r}
 anscombe_bad <- anscombe_good
@@ -87,12 +87,12 @@ head(anscombe_bad, 2)
 
 ### Pipelines
 
-Let's create several pipeline that validate the dataset. The requirements
-will be that the `id` column is composed of at least one character and
-that the x-coordinates are within the expected range.
+Let's create several pipelines for dataset validation. The requirements will
+be that the `id` column is composed of at least one character and that the
+x-coordinates are within the expected range.
 
 Using the `consonance` package, we can first define a suite of tests, and
-then invoke this suite on data.
+then define a pipeline that applies the suite on data.
 
 ```{r}
 suite_consonance <-
@@ -100,7 +100,6 @@ suite_consonance <-
                   min.chars=1, .var="id") +
   consonance_test("x in bounds", test_numeric,
                   lower=x_min, upper=x_max, .var="x")
-
 use_consonance <- function(d) {
   d %>% test_consonance(suite_consonance)
 }
@@ -134,8 +133,7 @@ use_assertthat <- function(d) {
 }
 ```
 
-Using the `checkmate` package, the implementation is similar to base R, but
-replaces `stopifnot` by package functions. Assertions on one variable can
+Using the `checkmate` package, assertions on one variable can
 include several criteria at once.
 
 ```{r}
@@ -169,7 +167,7 @@ performance are mentioned in the discussion at the end.
 
 ### Outputs
 
-Before measuring run times, let's run these implementations on data to make
+Before measuring run times, let's run the pipelines on data to make
 sure they produce the expected outputs. The good dataset should lead to quiet
 execution.
 
@@ -230,9 +228,9 @@ The measurements are available with fine detail, but the main properties
 are visible from median running times.
 
 ```{r, echo=FALSE, eval=TRUE, fig.width=6.5, fig.height=1.8, dpi=300, out.width="100%"}
-# prep - ind proper time ranges
+# prep - get a relevant range for the plot x-axis
 all.times <- c(split(runtimes_good$time, runtimes_good$expr),
-          split(runtimes_bad$time, runtimes_bad$expr))
+               split(runtimes_bad$time, runtimes_bad$expr))
 times.range <- c(0, max(sapply(all.times, quantile, p=0.5)))
 # draw the two sets of results
 oldpar <- par()
@@ -244,12 +242,11 @@ plot_runtimes(runtimes_bad, xlim=times.range, corner="B",
 newpar <- par(oldpar)
 ```
 
-The bars show time, so lower is better; both charts have the same
-scale on the x-axis. The results show that processing a non-problematic
-dataset is fast compared to detecting
-errors. The infrastructure provided by `consonance` slows it down
-compared to base R, but performance seems competitive compared to
-the `assertr` framework.
+The bars show time, so lower is better; both charts have the same scale on
+the x-axis. The results show that processing a non-problematic dataset is
+fast compared to detecting errors. The infrastructure provided by
+`consonance` slows it down compared to base R, but performance seems
+competitive compared to the `assertr` framework.
 
 
 ### Measurements with skipped tests

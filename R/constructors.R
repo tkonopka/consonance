@@ -29,7 +29,7 @@ consonance_suite <- function(level=c("error", "warning"),
     level = level,
     logger = logger
   )
-  class(result) <- "consonance_suite"
+  class(result) <- c("consonance", "consonance_suite")
   result
 }
 
@@ -115,7 +115,7 @@ consonance_one <- function(.desc, .fun, ...,
                  var=.var,
                  type=.type,
                  level=.level)
-  class(result) <- "consonance_test"
+  class(result) <- c("consonance", "consonance_test")
   invisible(result)
 }
 

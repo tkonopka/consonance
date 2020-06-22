@@ -45,7 +45,7 @@ large_data %>%
   work_on_data_1 %>%
   test_consonance(suite_pipeline) %>%
   work_on_data_2
-# edits to pseudo-code for debugging
+# pseudo-code for a pipeline - manual toggling for speed or debugging
 large_data %>%
   test_consonance(suite_pipeline, skip=TRUE) %>%
   work_on_data_1 %>%

@@ -16,7 +16,7 @@
 #' xy <- data.frame(x=1:10, y=1:10)
 #' xy.lm <- lm(y~x, data=xy)
 #' suite <- consonance_suite() +
-#'    consonance_test("x numeric", is.numeric)
+#'    consonance_test("x numeric", is.numeric, .var="x")
 #' xy.model <- attach_consonance(xy.lm, suite)
 #'
 #' # preview that the test suite is attached to the model
@@ -40,10 +40,10 @@ attach_consonance <- function(object, suite) {
   result$consonance <- suite
   # re-assign the function environemnts so that the suite functions
   # can make use of variables defined within the object
-  result.env <- list2env(result)
-  for (i in seq_along(suite$tests)) {
-    environment(result$consonance$tests[[i]]$fun) <- result.env
-  }
+  #result.env <- list2env(result)
+  #for (i in seq_along(suite$tests)) {
+  #  environment(result$consonance$tests[[i]]$fun) <- result.env
+  #}
   result
 }
 
@@ -88,18 +88,20 @@ detach_consonance <- function(object) {
 #' @noRd
 #' @keywords internal
 #' @param obj list-like object
+#' @param parent environemtn
 #'
-#' @return consonance suite, or character to signal bad input
-get_consonance_suite <- function(obj) {
+#' @return list with consonance suite and an environment
+get_consonance_suite_env <- function(obj, parent) {
   if (is(obj, "consonance_suite"))
-    return(obj)
+    return(list(suite = obj, env = NULL))
   if (is(obj, "consonance_test"))
-    return(consonance_suite() + obj)
+    return(list(suite= consonance_suite() + obj, env = NULL))
   if ("consonance" %in% names(obj)) {
     result <- obj$consonance
     if (is(result, "consonance_suite"))
-      return(result)
+      return(list(suite = result,
+                  env = list2env(obj, parent=parent)))
   }
-  substitute(obj)
+  NULL
 }
 

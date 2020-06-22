@@ -20,6 +20,9 @@ test_consonance(
 
 \item{skip}{logical, set to TRUE to skip all tests}
 
+\item{skip.action}{character, determines what happens when skip=TRUE.
+Action 'log' sends an INFO message to the logger, 'none' is silent.}
+
 \item{logging.level}{character, code to indicate logging level,
 leave NULL to use the logging level specified in suite constructor}
 
@@ -35,6 +38,18 @@ for its side effects. It stops when a data
 }
 \examples{
 
+# create a test or a suite with a test
+test_1 <- consonance_test("a numeric", is.numeric)
+suite_1 <- consonance_suite() + test_1
 
+# applying the test or suite on numeric data
+# should execute without visible output
+test_consonance(c(1, 2, 3), test_1)
+test_consonance(c(1, 2, 3), suite_1)
+
+# applying the test or suite on non-numeric data
+# should produce message and stop execution
+# test_consonance(letters, test_1)
+# test_consonance(letters, suite_1)
 
 }

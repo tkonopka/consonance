@@ -17,7 +17,3 @@ consonance suite
 \description{
 augment a consonance suite with a new consonance test
 }
-\examples{
-
-
-}
