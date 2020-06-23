@@ -11,7 +11,7 @@ library(magrittr)
 
 In addition to `consonance`, we load `checkmate` as that provides many fast
 functions designed for checking arguments, which we can use in a consonance
-suite. The `dplyr` package provides the piping operator `%>%`.
+suite. The `magrittr` package provides the piping operator `%>%`.
 
 For a practical demonstration, let's create a consonance test suite that
 requires data vectors to be numeric.
@@ -59,7 +59,8 @@ This is passed to the assertion function, i.e. to `assert_numeric` from the
 `checkmate` package. Here, it imposes a constraint that data should not
 include any missing values.
 
-We can try the suite on some data, this time using the `dplyr` syntax.
+We can try the suite on some data, this time using the data pipe (`%>%`)
+syntax.
 
 ```{r, error=TRUE}
 # Numeric vectors with names result in quiet execution
@@ -70,8 +71,8 @@ c(1, 2) %>% test_consonance(suite_2)
 c(a=1, b=NA) %>% test_consonance(suite_2)
 ```
 
-The convenience of the `consonance` workflow becomes even more
-apparent when performing long series of tests, testing more complex objects
-like data frames or models, logging output, and toggling strictness of
-individual requirements.
+The convenience of the `consonance` workflow becomes apparent when
+performing  long series of tests, testing more complex objects like data
+frames or models, logging output, and toggling strictness of individual
+requirements.
 

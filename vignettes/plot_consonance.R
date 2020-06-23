@@ -6,14 +6,31 @@ anscombe.xlim <- range(unlist(anscombe[c("x1", "x2", "x3", "x4")]))
 anscombe.ylim <- range(unlist(anscombe[c("y1", "y2", "y3", "y4")]))
 
 # expects a data frame with (x, y) coordinates
-plot_anscombe <- function(d, xlab="", ylab="", main="") {
-  parplot(anscombe.xlim, anscombe.ylim)
+plot_anscombe <- function(d, xlab="", ylab="", main="",
+                          xlim=anscombe.xlim, ylim=anscombe.ylim,
+                          model="linear", shade.range=FALSE, Rcssclass=NULL) {
+  RcssCompulsoryClass <- RcssGetCompulsoryClass(Rcssclass=Rcssclass)
+  parplot(anscombe.xlim, anscombe.ylim, xlim=xlim, ylim=ylim)
+  if (shade.range) {
+    xrange <- range(d$x)
+    yaxs <- graphics::par()$usr[3:4]
+    rect(xrange[1], yaxs[1], xrange[2], yaxs[2], Rcssclass="range")
+  }
   box()
   axis(1, lwd=0, Rcssclass="x")
   axis(2, lwd=0, Rcssclass="y")
-  dlm <- lm(y~x, data=d)
-  lines(anscombe.xlim,
-        dlm$coefficients[1] + anscombe.xlim*dlm$coefficients[2])
+  if ("linear" %in% model) {
+    dlm <- lm(y~x, data=d)
+    lines(xlim,
+          dlm$coefficients[1] + anscombe.xlim*dlm$coefficients[2],
+          Rcssclass="linear")
+  }
+  if ("quadratic" %in% model) {
+    dqm <- lm(y~x+I(x^2), data=d)
+    xvals <- seq(xlim[1], xlim[2], length=128)
+    yvals <- predict(dqm, data.frame(x=xvals))
+    lines(xvals, yvals, Rcssclass="quadratic")
+  }
   points(d$x, d$y)
   mtext(side=1, xlab, Rcssclass="x")
   mtext(side=2, ylab, Rcssclass="y")

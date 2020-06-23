@@ -3,39 +3,63 @@
 Consonance means [accord or agreement](https://www.dictionary.com/browse/consonance).
 Package `consonance` uses this term in the context of data analysis to
 convey that a dataset passes a set of criteria and that, for example, the
-dataset can progress to statistical analysis. The package aims to facilitate
-tracking and checking quality control criteria by providing a set of
-convenience functions that are straightforward to apply on arbitrary data and
-to incorporate in existing analysis pipelines.
+dataset can progress to statistical analysis. As an example, consider the
+short time series below.
+
+```{r anscombe_intro, echo=FALSE, eval=TRUE, fig.width=3.2, fig.height=1.7, dpi=300, out.width="50%"}
+# this anscombe data with some noise to make it more interesting visually
+aB <- data.frame(id = "", x = anscombe$x2, y = anscombe$y2)
+aB$y <- aB$y + 0.45*rep(c(1, -1), 6)[-1]
+aBheight <- max(aB$y) - min(aB$y)
+aBwidth <- max(aB$x) - min(aB$x)
+oldpar <- par()
+plot_anscombe(aB, model=c("linear", "quadratic"),
+              xlim=range(aB$x)+c(-0.2, 0.8)*aBwidth,
+              ylim=range(aB$y)+c(-0.8, 0.5)*aBheight,
+              xlab="x (a.u.)", ylab="y (a.u.)",
+              shade.range=TRUE, Rcssclass="intro")
+text(19.5, 9.3, "linear model", Rcssclass=c("intro", "label"))
+text(16.2, 0.8, "quadratic\nmodel", Rcssclass=c("intro", "label"))
+newpar <- par(oldpar)
+```
+
+Two candidate models (dotted lines) fit the data well within the range of the
+raw data (shaded area), but their predictions diverge outside that range. In
+this case, the issue can be averted by restricting predictions to a limited
+range. In practice, however, implementing such criteria for R models and
+applying them on data before making predictions is not as straightforward as
+one might wish. The `consonance` package streamlines defining groups of
+checks on data and applying them within analysis pipelines.
 
 Quality control in data analysis can be thought of in terms of individual
 components, or in terms of how those components interact with one another.
 In software development, unit testing is an effective technique for tracking
 that functions or packages perform their tasks correctly. The `testthat`
 package is a leading toolkit in this regard in the R ecosystem. When working
-with data, packages like `assertthat`, `checkmate`, and `assertr`, among others,
-offer varying combinations of features. `assertthat` and `checkmate`
-focus on testing individual variables. `assertr` in contrast also provides
-tools to test entire datasets, for example for outliers. In addition, these
-packages are quite flexible and can be extended in many ways. But the use of
-quality controls in everyday analysis is still not as commonplace as
-unit-testing is in software development, and this may be in part due to the
-usability of the available tools.
+with data, packages `assertthat`, `checkmate`, and `assertr`, among
+others, offer varying combinations of features. `assertthat` and `checkmate`
+focus on testing individual variables, for example to check for missing values
+or value ranges. `assertr` also provides tools to test entire datasets, for
+example to detect outliers. In addition, these packages can be extended in
+many ways. But the use of quality controls in routine analysis
+is still not as commonplace as unit-testing is in software development, and
+this may be in part due to the interface and defaults features of the
+available tools.
 
 Package `consonance` provides an alternative framework for building suites
 of tests on datasets. Its focus is on grouping tests into suites, which
 can be easily set up, maintained, and applied on data. Other features
 include the ability to attach test to model objects, define tests at varying
 levels of severity, and log outcomes. The framework can be thought of as a
-layer for managing `assertthat` or `checkmate` tests. Or, it
+convenience layer for managing `assertthat` or `checkmate` tests. Or, it
 can be thought of as an alternative syntax for `assertr` test chains.
 
 The next section in this vignette contains an [overview](#overview)
-of the package; this serves to introduce the syntax and show minimal
-working examples. The following section with the
-[user's guide](#guide) provides more details on all the
-package features. The section on [use cases](#usecases) shows templates
-for three different ways to apply the package in practice. These scenarios cover software
-development as well as data analysis. A separate vignette quantifies the
-cost of incorporating consonance testing in terms of running time.
+of the package; this serves to introduce the core package functions and to
+show minimal working examples. The [user's guide](#guide) provides more
+details on all the package features. The section on [use cases](#usecases)
+shows templates for three different ways to apply the package in practice.
+These scenarios cover software development as well as data analysis. Separate
+vignettes provide more details on attaching consonance suites to model objects
+and quantify the cost of consonance testing in terms of running time.
 

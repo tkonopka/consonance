@@ -8,6 +8,11 @@ par {
     mai: 0.2 0.2 0.1 0.15;
     mgp: 0 0 0;
 }
+par.intro {
+    ps: 10;
+    mai: 0.35 0.35 0.1 0.15;
+    mgp: 0 0 0;
+}
 plot {
     type: n;
     axes: FALSE;
@@ -19,10 +24,16 @@ plot {
 box {
     lwd: 0.5;
 }
+rect.intro.range {
+    border: NA;
+    lwd: NA;
+    col: #ededed;
+}
 axis {
     las: 1;
     tck: -0.02;
     cex.axis: 0.9;
+    col.axis: #222222;
 }
 axis.x {
     line: -0.1;
@@ -34,12 +45,28 @@ lines {
     lwd: 1;
     col: #a49694;
 }
+lines.intro {
+    lwd: 1.5;
+    col: #908280;
+    lty: 2;
+}
 points {
     pch: 21;
     cex: 1.2;
     lwd: 0.5;
     col: #44968c;
     bg: #64b6ac;
+}
+points.intro {
+    cex: 0.9;
+    col: #105249;
+}
+text.intro.label {
+    col: #222222;
+    cex: 0.9;
+}
+mtext {
+    col: #222222;
 }
 mtext.main {
     adj: 0;
@@ -50,7 +77,12 @@ mtext.x {
 mtext.y {
     line: 1.0;
 }
-
+mtext.intro.x {
+    line: 0.8;
+}
+mtext.intro.y {
+    line: 1.0;
+}
 text.corner {
     cex: 1.3;
     font: 2;
