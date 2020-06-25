@@ -1,6 +1,6 @@
 ## Overview {#overview}
 
-This section gives a preview of the `consonance` package. We will need
+This section gives a preview of the `consonance` framework. We will need
 the following packages.
 
 ```{r}

@@ -7,6 +7,7 @@
 test_consonance(
   x,
   suite,
+  level = NA,
   skip = FALSE,
   skip.action = c("log", "none"),
   logging.level = NULL,
@@ -17,6 +18,9 @@ test_consonance(
 \item{x}{data object}
 
 \item{suite}{object of class consonance}
+
+\item{level}{character, strictness level, use "warning" or "error" to
+determine the minimal criteria to halt execution}
 
 \item{skip}{logical, set to TRUE to skip all tests}
 

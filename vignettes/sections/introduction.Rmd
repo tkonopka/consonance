@@ -3,8 +3,10 @@
 Consonance means [accord or agreement](https://www.dictionary.com/browse/consonance).
 Package `consonance` uses this term in the context of data analysis to
 convey that a dataset passes a set of criteria and that, for example, the
-dataset can progress to statistical analysis. As an example, consider the
-short time series below.
+dataset can progress to statistical analysis.
+
+As an example of the concept of consonance, consider the short data series
+below.
 
 ```{r anscombe_intro, echo=FALSE, eval=TRUE, fig.width=3.2, fig.height=1.7, dpi=300, out.width="50%"}
 # this anscombe data with some noise to make it more interesting visually

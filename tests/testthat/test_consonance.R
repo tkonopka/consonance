@@ -15,6 +15,10 @@ suite_check <- consonance_suite() + single_check
 # more logging
 suite_verbose <- consonance_suite(logging.level="INFO") + single_assert
 
+# test that only generate warnings
+suite_warning <- consonance_suite() +
+  consonance_test("chars", is.character, .level="warning")
+
 
 # simple data objects (for this file only)
 abc <- letters[1:3]
@@ -180,5 +184,13 @@ test_that("test_consonance can use different logging level", {
   expect_silent(test_consonance(abc, suite_assert))
   # but can produce output by setting logging level manually
   expect_output(test_consonance(abc, suite_assert, logging.level="INFO"))
+})
+
+test_that("test_consonance can toggle strictness at runtime", {
+  # suite_warning should only generate warnings and keep going (no error)
+  expect_output(test_consonance(1:3, suite_warning), "WARN")
+  # but can halt if runtime level is more strict
+  expect_error(capture_output(
+    test_consonance(1:3, suite_assert, level="warning")))
 })
 

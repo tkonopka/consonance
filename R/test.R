@@ -118,6 +118,8 @@ evaluate_suite <- function(results, logger) {
 #' 
 #' @param x data object
 #' @param suite object of class consonance
+#' @param level character, strictness level, use "warning" or "error" to
+#' determine the minimal criteria to halt execution
 #' @param skip logical, set to TRUE to skip all tests
 #' @param skip.action character, determines what happens when skip=TRUE.
 #' Action 'log' sends an INFO message to the logger, 'none' is silent.
@@ -145,10 +147,9 @@ evaluate_suite <- function(results, logger) {
 #' # test_consonance(letters, test_1)
 #' # test_consonance(letters, suite_1)
 #'
-test_consonance <- function(x, suite,
+test_consonance <- function(x, suite, level=NA,
                             skip=FALSE, skip.action=c("log", "none"),
-                            logging.level=NULL,
-                            log.file=NA) {
+                            logging.level=NULL, log.file=NA) {
 
   if (skip & match.arg(skip.action) == "none")
     return(invisible(x))
@@ -177,7 +178,9 @@ test_consonance <- function(x, suite,
                    model=suite_env$env)
   final <- evaluate_suite(result, logger)
 
-  if (final[suite$level]>0) {
+  if (is.na(level))
+    level <- suite$level
+  if (final[level]>0) {
     stop("consonance suite\n", call.=FALSE)
   }
 

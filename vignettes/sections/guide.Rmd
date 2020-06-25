@@ -273,7 +273,16 @@ data.frame(x=mean(anscombe.qs[1:2])) %>% test_consonance(suite_x)
 ```
 
 Note that the last example generates only warnings and allows execution
-to continue.
+to continue. It is also possible to run `test_consonance` in a very strict
+mode and stop execution even upon warnings. This can be achieved by setting
+`level`.
+
+```{r, error=TRUE}
+# a value of x on the outskirts of the distribution should raise a warning.
+# by setting level="warning", the test suite will raise an error
+data.frame(x=mean(anscombe.qs[1:2])) %>% test_consonance(suite_x, level="warning")
+```
+
 
 
 ### Model consonance
