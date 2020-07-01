@@ -34,25 +34,53 @@ consonance_suite <- function(level=c("error", "warning"),
 }
 
 
-#' constructor for a logger
+#' constructor for a logger for a consonance suite
 #'
-#' (this is an internal function, not for export)
+#' This is primarily for use by the consonance_suite constructor. It
+#' can also be used to replace an existing logger.
 #'
 #' @keywords internal
 #' @noRd
 #' @param logging.level character, level of loggin
-#' @param log.file character, path to log file
+#' @param log.file character or NULL, path to log file
 #'
 #' @return object with functions log_error, log_info, log_warn
-consonance_logger <- function(logging.level, log.file) {
+#'
+#' @examples
+#'
+#' # a consonance suite automatically create a logger with default settings
+#' suite <- consonance_suite()
+#' suite$logger$threshold
+#'
+#' # replace the existing logger by a manually constructed logger
+#' suite$logger <- consonance_logger("INFO", log.file="my-log.txt")
+#' suite$logger$threshold
+#'
+consonance_logger <- function(logging.level=c("WARN", "INFO", "ERROR"),
+                              log.file=NULL) {
+  logging.level <- as.character(logging.level)
+  logging.level <- match.consonance.arg(logging.level, "logging.level")
   result <- log4r::logger(logging.level)
   if (!is.null(log.file)) {
     result <- log4r::logger(logging.level,
-                           appenders=log4r::file_appender(log.file))
+                            appenders=log4r::file_appender(log.file))
   }
   result$log_error <- log4r::error
   result$log_info <- log4r::info
   result$log_warn <- log4r::warn
+  result
+}
+
+
+#' constructor for a logger object that does not output anything
+#'
+#' @keywords internal
+#' @noRd
+#'
+#' @return object with functions log_error, log_info, log_warn
+silent_logger <- function() {
+  result <- list()
+  result$log_error <- result$log_info <- result$log_warn <- function(...) {}
   result
 }
 
@@ -100,9 +128,9 @@ consonance_logger <- function(logging.level, log.file) {
 #' df_test
 #'
 consonance_one <- function(.desc, .fun, ...,
-                          .var=NULL,
-                          .type=c("test", "assert", "check"),
-                          .level=c("error", "warning", "info")) {
+                           .var=NULL,
+                           .type=c("test", "assert", "check"),
+                           .level=c("error", "warning", "info")) {
   .level <- match.consonance.arg(.level, "level")
   .type <- match.consonance.arg(.type, "type")
   if (!is(.desc, "character") | length(.desc) != 1) {

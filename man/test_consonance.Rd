@@ -10,7 +10,7 @@ test_consonance(
   level = NA,
   skip = FALSE,
   skip.action = c("log", "none"),
-  logging.level = NULL,
+  logging.level = NA,
   log.file = NA
 )
 }
@@ -27,8 +27,9 @@ determine the minimal criteria to halt execution}
 \item{skip.action}{character, determines what happens when skip=TRUE.
 Action 'log' sends an INFO message to the logger, 'none' is silent.}
 
-\item{logging.level}{character, code to indicate logging level,
-leave NULL to use the logging level specified in suite constructor}
+\item{logging.level}{character, code to indicate logging level;
+leave NA to use the logging level specified in suite constructor;
+set NULL to avoid logging altogether}
 
 \item{log.file}{character, path to log file, or leave NA to follow
 the logger set up within suite}

@@ -111,6 +111,30 @@ evaluate_suite <- function(results, logger) {
 }
 
 
+#' prepare a logger based on suite settings or run-time arguments
+#'
+#' @keywords internal
+#' @noRd
+#' @param suite object of class consonance
+#' @param logging.level character, NULL, or NA
+#' @param logging.file character, NULL, or NA
+#'
+#' @return list with functions log_info, log_warn, log_error
+get_consonance_logger <- function(suite, logging.level=NA, log.file=NA) {
+  logger <- suite$logger
+  if (!identical(log.file, NA)) {
+    logger <- consonance_logger(suite$logger$threshold, log.file)
+  }
+  if (!identical(logging.level, NA)) {
+    if (is.null(logging.level)) {
+      logger <- silent_logger()
+    } else {
+      logger$threshold <- loglevel(logging.level)
+    }
+  }
+  logger
+}
+
 #' check consonance of an object with a suite of tests
 #'
 #' The function always returns its primary input and should be invoked
@@ -123,8 +147,9 @@ evaluate_suite <- function(results, logger) {
 #' @param skip logical, set to TRUE to skip all tests
 #' @param skip.action character, determines what happens when skip=TRUE.
 #' Action 'log' sends an INFO message to the logger, 'none' is silent.
-#' @param logging.level character, code to indicate logging level,
-#' leave NULL to use the logging level specified in suite constructor
+#' @param logging.level character, code to indicate logging level;
+#' leave NA to use the logging level specified in suite constructor;
+#' set NULL to avoid logging altogether
 #' @param log.file character, path to log file, or leave NA to follow
 #' the logger set up within suite
 #' @export
@@ -149,24 +174,19 @@ evaluate_suite <- function(results, logger) {
 #'
 test_consonance <- function(x, suite, level=NA,
                             skip=FALSE, skip.action=c("log", "none"),
-                            logging.level=NULL, log.file=NA) {
+                            logging.level=NA, log.file=NA) {
 
   if (skip & match.arg(skip.action) == "none")
     return(invisible(x))
 
   # get a suite object - either from argument or an attachment
-  suite_env <- get_consonance_suite_env(suite, parent=parent.frame())
+  suite_env <- get_consonance_suite_env(suite)
   if (is.null(suite_env))
     stop(paste0("object '", substitute(suite), "' is not a consonance suite\n"))
-  # establish a logger for this group of tests
   suite <- suite_env$suite
-  logger <- suite$logger
-  if (!is.na(log.file)) {
-    logger <- consonance_logger(suite$logger$threshold, log.file)
-  }
-  if (!is.null(logging.level)) {
-    logger$threshold <- loglevel(logging.level)
-  }
+  # get a logger - either the one from the suite or adjust based on args
+  logger <- get_consonance_logger(suite, logging.level, log.file)
+
   if (skip) {
     logger$log_info("consonance suite: skipping", logger=logger)
     return(invisible(x))
@@ -174,8 +194,7 @@ test_consonance <- function(x, suite, level=NA,
 
   # perform & log individual tests, then evaluate suite as a whole
   result <- lapply(suite$tests, evaluate_test,
-                   x=x, logger=logger,
-                   model=suite_env$env)
+                   x=x, logger=logger, model=suite_env$env)
   final <- evaluate_suite(result, logger)
 
   if (is.na(level))

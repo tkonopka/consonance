@@ -222,7 +222,7 @@ datasets.
 library(magrittr)
 # the training and test datasets should evaluate quietly
 d_train %>% test_consonance(model_two_A)
-d_test %>% test_consonance(model_twol_A)
+d_test %>% test_consonance(model_two_A)
 # the corrupted datasets will generate messages
 d_corrupt_3 %>% test_consonance(model_two_A)
 d_corrupt_4 %>% test_consonance(model_two_A)
@@ -289,8 +289,7 @@ model_all_B <- attach_consonance(model_all, suite_ranges + suite_strong)
 model_two_B <- attach_consonance(model_two, suite_ranges + suite_strong)
 ```
 
-As before, we can evaluate consonance between our original and our corrupted
-datasets with these new models.
+We can again evaluate our original and corrupted datasets with these new models.
 
 ```{r, error=TRUE}
 # the training and test datasets should evaluate quietly

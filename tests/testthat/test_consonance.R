@@ -186,6 +186,16 @@ test_that("test_consonance can use different logging level", {
   expect_output(test_consonance(abc, suite_assert, logging.level="INFO"))
 })
 
+test_that("test_consonance can avoid logging altogether at run-time", {
+  s <- suite_assert
+  # no output on good data
+  expect_silent(test_consonance(abc, s, logging.level=NULL))
+  # error and output on bad data
+  expect_output(expect_error(test_consonance(1:3, s)))
+  # error only but not output
+  expect_silent(expect_error(test_consonance(1:3, s, logging.level=NULL)))
+})
+
 test_that("test_consonance can toggle strictness at runtime", {
   # suite_warning should only generate warnings and keep going (no error)
   expect_output(test_consonance(1:3, suite_warning), "WARN")

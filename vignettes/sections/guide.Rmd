@@ -347,7 +347,8 @@ prediction is made.
 By default, `test_consonance` does not generate output when
 evaluated on consonant data and outputs messages upon problems. The
 level of logging can be adjusted by setting `logging.level` to `"INFO"`,
-`"WARN"`, or `"ERROR"`.
+`"WARN"`, or `"ERROR"`. There are actually several mechanisms to implement
+this adjustment.
 
 Setting the logging level in the suite constructor affects all evaluations.
 
@@ -384,4 +385,23 @@ latter is as follows.
 # the verbose suite would normally display messages in the console
 test_consonance(c("a", "b"), suite_verbose, log.file="my-log.log")
 ```
+
+These mechanisms above require setting the logging settings in the
+constructor, or each time during run-time. But in some cases it may be
+desirable to adjust the logging level for an existing suite so that a new
+settings becomes the new default behavior. This can be achieved with a new
+constructor and the composition operator.
+
+```{r}
+# create a new empty suite with desired logging settings,
+# then add consonance test from an old suite into the new one
+suite_normal <- consonance_suite() + suite_verbose
+# simple evaluations will no longer generate log messages
+test_consonance(c("a", "b"), suite_normal)
+# simple evaluations with the versbose suite still generate log messages
+test_consonance(c("a", "b"), suite_verbose)
+```
+
+Note: to change logging settings for a suite that is attached to a model,
+create a new suite and attach it to the same model.
 

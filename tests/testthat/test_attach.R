@@ -17,11 +17,6 @@ test_that("attach_consonance argument checks", {
   expect_error(attach_consonance(list(), list()), "not a suite")
 })
 
-test_that("dettach_consonance argument checks", {
-  expect_error(detach_consonance(NULL), "does not contain")
-  expect_error(detach_consonance(list(a=10)), "does not contain")
-})
-
 
 # attaching a consonance suite to a list-like object
 
@@ -93,20 +88,5 @@ test_that("attaching sets function environment", {
   model <- attach_consonance(mylist, suite)
   expect_silent(test_consonance(c(12, 14), model))
   expect_error(capture_output(test_consonance(c(5, 15), model)))
-})
-
-
-
-# detaching
-
-test_that("detaching returns a suite", {
-  mylist <- list(a=10, b=20)
-  suite <- consonance_suite() +
-    consonance_assert("[a, b]", function(x) {
-      simple_range(x, lower=a, upper=b)
-    })
-  model <- attach_consonance(mylist, suite)
-  suite_2 <- detach_consonance(model)
-  expect_is(suite_2, "consonance_suite")
 })
 
