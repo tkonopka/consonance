@@ -22,14 +22,21 @@ The default "log4r" sets up a simple console logger using package log4r.
 Setting a non-default logger over-rides values set in logging.level.}
 }
 \value{
-object of class consonance
+object of class consonance and consonance_suite
 }
 \description{
-create a new suite of consonance tests
+The constructor always creates an empty suite (without any consonance test).
+To add tests into the suite, use the + operator together with
+constructors consonance_assert, consonance_check, or consonance_test.
 }
 \examples{
 
+# an empty consonance suite with default settings
 suite <- consonance_suite()
 suite
+
+# an empty consonance suite thta is verbose (logs more messages)
+suite_verbose <- consonance_suite(logging.level="INFO")
+suite_verbose
 
 }

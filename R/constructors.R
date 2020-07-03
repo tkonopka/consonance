@@ -3,6 +3,10 @@
 
 #' create a new suite of consonance tests
 #'
+#' The constructor always creates an empty suite (without any consonance test).
+#' To add tests into the suite, use the + operator together with
+#' constructors consonance_assert, consonance_check, or consonance_test.
+#'
 #' @param level character, determines when to halt execution
 #' @param logging.level character, determines level of verbosity in logs.
 #' This argument is over-ridden by setting a non-default logger.
@@ -12,11 +16,16 @@
 #' Setting a non-default logger over-rides values set in logging.level.
 #' @export
 #'
-#' @return object of class consonance
+#' @return object of class consonance and consonance_suite
 #' @examples
 #'
+#' # an empty consonance suite with default settings
 #' suite <- consonance_suite()
 #' suite
+#'
+#' # an empty consonance suite thta is verbose (logs more messages)
+#' suite_verbose <- consonance_suite(logging.level="INFO")
+#' suite_verbose
 #'
 consonance_suite <- function(level=c("error", "warning"),
                              logging.level=c("WARN", "INFO", "ERROR"),
@@ -87,9 +96,6 @@ silent_logger <- function() {
 
 #' create a new consonance assertion, check, or test
 #'
-#' This is a constructor which generates an object. The object can be
-#' inspected using print or str.
-#'
 #' @keywords internal
 #' @param .desc character, test description
 #' @param .fun function
@@ -100,7 +106,7 @@ silent_logger <- function() {
 #' for the distinction between 'assert', 'check', and 'test' functions.
 #' @export
 #'
-#' @return object x, unchanged
+#' @return object of class consonance and consonance_test.
 #'
 #' @examples
 #'

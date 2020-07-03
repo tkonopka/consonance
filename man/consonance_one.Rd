@@ -37,11 +37,10 @@ for the distinction between 'assert', 'check', and 'test' functions.}
 \item{.value.var}{character, component of a data object to test}
 }
 \value{
-object x, unchanged
+object of class consonance and consonance_test.
 }
 \description{
-This is a constructor which generates an object. The object can be
-inspected using print or str.
+create a new consonance assertion, check, or test
 }
 \examples{
 
