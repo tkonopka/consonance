@@ -47,7 +47,7 @@ plot_runtimes <- function(d, xlim=c(0, max(d)),
   d <- as.data.frame(d)
   d.labels <- rev(as.character(levels(d$expr)))
   # convert from nanosecond to microseconds
-  n = 1000
+  n <- 1000
   d.values <- split(d$time/n, d$expr)
   d.medians <- sapply(d.values, median)[d.labels]
   d.q75 <- sapply(d.values, quantile, p=0.75)[d.labels]

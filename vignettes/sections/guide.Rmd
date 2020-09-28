@@ -53,8 +53,8 @@ suite_numeric_vec <-
   consonance_suite() +
   consonance_assert("numeric vector", assert_numeric, any.missing=FALSE)
 # perform the assessment on dataset A
-datasets$A$x %>% test_consonance(suite_numeric_vec)
-datasets$A$y %>% test_consonance(suite_numeric_vec)
+datasets$A$x %>% validate(suite_numeric_vec)
+datasets$A$y %>% validate(suite_numeric_vec)
 ```
 
 
@@ -79,15 +79,15 @@ on the designated component.
 Applying this suite on one of the `anscombe` datasets should execute quietly.
 
 ```{r}
-datasets$A %>% test_consonance(suite_numeric_df)
+datasets$A %>% validate(suite_numeric_df)
 ```
 
 To observe a failed test, we can apply the suite on a corrupted data frame.
 
 ```{r, error=TRUE}
 temp_df <- datasets$A
-temp_df$x[2] = NA
-temp_df %>% test_consonance(suite_numeric_df)
+temp_df$x[2] <- NA
+temp_df %>% validate(suite_numeric_df)
 ```
 
 The error messages indicate the corrupt data was detected, as intended.
@@ -102,11 +102,11 @@ components in arbitrary objects or lists.
 # a list object with miscellaneous components, including $x and $y
 temp_list_A <- list(x=c(1, 2, 3), y=c(1, 2), comment="x and y numeric")
 # testing temp_list_A should execute quietly
-temp_list_A %>% test_consonance(suite_numeric_df)
+temp_list_A %>% validate(suite_numeric_df)
 # another list object with a y component that is not numeric
 temp_list_B <- list(x=c(1, 2), y=factor(c(1, 2)), comment="y is not numeric")
 # testing temp_list_B should generate messages
-temp_list_B %>% test_consonance(suite_numeric_df)
+temp_list_B %>% validate(suite_numeric_df)
 ```
 
 Although `temp_list_A` and `temp_list_B` are not data frames, the suite
@@ -150,8 +150,8 @@ suite_3_unique <-
 Next, we can apply this suite on the `anscombe` datasets.
 
 ```{r, error=TRUE}
-datasets$A %>% test_consonance(suite_3_unique)
-datasets$D %>% test_consonance(suite_3_unique)
+datasets$A %>% validate(suite_3_unique)
+datasets$D %>% validate(suite_3_unique)
 ```
 
 Dataset A passes the assessment, but dataset D does not (refer to the
@@ -239,8 +239,8 @@ in the `anscombe` dataset.
 
 ```{r}
 # from the scatter plots, x-coordinates are in range [4, 19]
-anscombe.x = unlist(lapply(datasets, function(d) { d$x } ))
-anscombe.qs = quantile(anscombe.x, p=c(0, 0.1, 0.9, 1))
+anscombe.x <- unlist(lapply(datasets, function(d) { d$x } ))
+anscombe.qs <- quantile(anscombe.x, p=c(0, 0.1, 0.9, 1))
 anscombe.qs
 ```
 
@@ -267,9 +267,9 @@ let's create small data frames.
 
 ```{r, error=TRUE}
 # a value of x outside the range should here raise an error
-data.frame(x=min(anscombe.x)-1) %>% test_consonance(suite_x)
+data.frame(x=min(anscombe.x)-1) %>% validate(suite_x)
 # a value of x on the outskirts of the distribution should raise a warning
-data.frame(x=mean(anscombe.qs[1:2])) %>% test_consonance(suite_x)
+data.frame(x=mean(anscombe.qs[1:2])) %>% validate(suite_x)
 ```
 
 Note that the last example generates only warnings and allows execution
@@ -280,7 +280,7 @@ mode and stop execution even upon warnings. This can be achieved by setting
 ```{r, error=TRUE}
 # a value of x on the outskirts of the distribution should raise a warning.
 # by setting level="warning", the test suite will raise an error
-data.frame(x=mean(anscombe.qs[1:2])) %>% test_consonance(suite_x, level="warning")
+data.frame(x=mean(anscombe.qs[1:2])) %>% validate(suite_x, level="warning")
 ```
 
 
@@ -325,10 +325,10 @@ We can now use the model to perform data consonance checks.
 ```{r}
 # prediction on x-coordinates within the model range
 in_range <- data.frame(x=c(5, 10))
-in_range %>% test_consonance(B_lm_2) %>% predict(object=B_lm_2)
+in_range %>% validate(B_lm_2) %>% predict(object=B_lm_2)
 # prediction on x-coordinates outside of the model range
 out_range <- data.frame(x=c(20, 30))
-out_range %>% test_consonance(B_lm_2) %>% predict(object=B_lm_2)
+out_range %>% validate(B_lm_2) %>% predict(object=B_lm_2)
 ```
 
 The second dataset generates warnings and produces y-coordinates
@@ -358,7 +358,7 @@ suite_verbose <-
   consonance_suite(logging.level="INFO") +
   consonance_assert("character vector", assert_character)
 # simple evaluations will generate log messages
-test_consonance(c("a", "b"), suite_verbose)
+validate(c("a", "b"), suite_verbose)
 ```
 
 Another way to toggle the logging level is within `test_consonance`.
@@ -369,11 +369,11 @@ suite_standard <-
   consonance_suite() +
   consonance_assert("character vector", assert_character)
 # by default, successful runs will not generate messages
-test_consonance(c("a", "b"), suite_standard)
+validate(c("a", "b"), suite_standard)
 # but we can request more information
-test_consonance(c("a", "b"), suite_standard, logging.level="INFO")
+validate(c("a", "b"), suite_standard, logging.level="INFO")
 # logging goes back to normal without the explicit argument
-test_consonance(c("a", "b"), suite_standard)
+validate(c("a", "b"), suite_standard)
 ```
 
 Instead of writing messages to the console, the logger can output into a file
@@ -383,7 +383,7 @@ latter is as follows.
 
 ```{r, echo=TRUE, eval=FALSE}
 # the verbose suite would normally display messages in the console
-test_consonance(c("a", "b"), suite_verbose, log.file="my-log.log")
+validate(c("a", "b"), suite_verbose, log.file="my-log.log")
 ```
 
 These mechanisms above require setting the logging settings in the
@@ -397,9 +397,9 @@ constructor and the composition operator.
 # then add consonance test from an old suite into the new one
 suite_normal <- consonance_suite() + suite_verbose
 # simple evaluations will no longer generate log messages
-test_consonance(c("a", "b"), suite_normal)
+validate(c("a", "b"), suite_normal)
 # simple evaluations with the versbose suite still generate log messages
-test_consonance(c("a", "b"), suite_verbose)
+validate(c("a", "b"), suite_verbose)
 ```
 
 Note: to change logging settings for a suite that is attached to a model,

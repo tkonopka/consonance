@@ -1,4 +1,4 @@
-
+lib
 <style>
 <!-- Html styles to augment html_vignette -->
 h1 {
@@ -27,7 +27,14 @@ div.sourceCode {
     margin: 0;
 }
 code {
-    color: #161616;
+    color: #101010;
+}
+li code, p code {
+    font-size: 100%;
+    margin-left: -1px;
+    margin-right: -1px;
+    padding-left: 1px;
+    padding-right: 1px;
 }
 code span.dv {
     color: #33805a;

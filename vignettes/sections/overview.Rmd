@@ -33,10 +33,10 @@ examples.
 
 ```{r, error=TRUE}
 # Testing numeric vectors results in quiet execution
-test_consonance(c(1, 2), suite_1)
-test_consonance(c(1, 2, NA), suite_1)
+validate(c(1, 2), suite_1)
+validate(c(1, 2, NA), suite_1)
 # Testing a non-numeric vector results in messages
-test_consonance(c("a", "b"), suite_1)
+validate(c("a", "b"), suite_1)
 ```
 
 All examples provide `test_consonance` with a data vector and our test suite.
@@ -64,11 +64,11 @@ syntax.
 
 ```{r, error=TRUE}
 # Numeric vectors with names result in quiet execution
-c(a=1, a=2) %>% test_consonance(suite_2)
+c(a=1, a=2) %>% validate(suite_2)
 # Numeric vectors without names result in error messages
-c(1, 2) %>% test_consonance(suite_2)
+c(1, 2) %>% validate(suite_2)
 # Vectors with missing data result in error messages
-c(a=1, b=NA) %>% test_consonance(suite_2)
+c(a=1, b=NA) %>% validate(suite_2)
 ```
 
 The convenience of the `consonance` workflow becomes apparent when

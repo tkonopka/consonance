@@ -152,7 +152,6 @@ get_consonance_logger <- function(suite, logging.level=NA, log.file=NA) {
 #' set NULL to avoid logging altogether
 #' @param log.file character, path to log file, or leave NA to follow
 #' the logger set up within suite
-#' @export
 #'
 #' @return object x, unchanged
 #'
@@ -172,9 +171,9 @@ get_consonance_logger <- function(suite, logging.level=NA, log.file=NA) {
 #' # test_consonance(letters, test_1)
 #' # test_consonance(letters, suite_1)
 #'
-test_consonance <- function(x, suite, level=NA,
-                            skip=FALSE, skip.action=c("log", "none"),
-                            logging.level=NA, log.file=NA) {
+validate_consonance <- function(x, suite, level=NA,
+                                skip=FALSE, skip.action=c("log", "none"),
+                                logging.level=NA, log.file=NA) {
 
   if (skip & match.arg(skip.action) == "none")
     return(invisible(x))
@@ -204,5 +203,12 @@ test_consonance <- function(x, suite, level=NA,
   }
 
   invisible(x)
+}
+
+
+#' @rdname validate_consonance
+#' @export
+validate <- function(x, suite, ...) {
+  validate_consonance(x, suite=suite, ...)
 }
 

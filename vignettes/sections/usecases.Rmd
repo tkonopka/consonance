@@ -23,11 +23,11 @@ skip testing.
 # pseudo-code
 suite_arguments <- ...
 custom_function_1 <- function(x, skip.qc=FALSE) {
-  test_consonance(x, suite_arguments, skip=skip.qc)
+  validate(x, suite_arguments, skip=skip.qc)
   # work for custom function 1
 }
 custom_function_2 <- function(x, skip.qc=FALSE) {
-  test_consonance(x, suite_arguments, skip=skip.qc)
+  validate(x, suite_arguments, skip=skip.qc)
   # work for custom function 2
 }
 ```
@@ -41,15 +41,15 @@ the course of a pipeline and to log progress.
 ```{r, echo=TRUE, eval=FALSE}
 # pseudo-code for a hypothetical pipeline - standard use
 large_data %>%
-  test_consonance(suite_pipeline) %>%
+  validate(suite_pipeline) %>%
   work_on_data_1 %>%
-  test_consonance(suite_pipeline) %>%
+  validate(suite_pipeline) %>%
   work_on_data_2
 # pseudo-code for a pipeline - manual toggling for speed or debugging
 large_data %>%
-  test_consonance(suite_pipeline, skip=TRUE) %>%
+  validate(suite_pipeline, skip=TRUE) %>%
   work_on_data_1 %>%
-  test_consonance(suite_pipeline, logging.level="INFO") %>%
+  validate(suite_pipeline, logging.level="INFO") %>%
   work_on_data_2
 ```
 
@@ -73,7 +73,7 @@ model$consonance <- suite_for_model
 save(model, file="model.Rda")
 # pseudo-code for end-user
 load("model.Rda")
-new_data %>% test_consonance(model) %>% predict(object=model)
+new_data %>% validate(model) %>% predict(object=model)
 ```
 
 This is particularly useful to raise warnings for data that is technically

@@ -4,7 +4,9 @@
 \name{consonance_model_data}
 \alias{consonance_model_data}
 \title{synthetic dataset with five variables plus an outcome variable}
-\format{An object of class \code{data.frame} with 200 rows and 6 columns.}
+\format{
+An object of class \code{data.frame} with 200 rows and 6 columns.
+}
 \usage{
 data(consonance_model_data)
 

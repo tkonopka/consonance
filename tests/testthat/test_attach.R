@@ -57,8 +57,8 @@ test_that("test_consonance using a model with consonance", {
   # make sure the suite was attached
   expect_true("consonance" %in% names(model))
   # data conforms to the suite, so they should conform to the model
-  expect_silent(test_consonance(xy, suite))
-  expect_silent(test_consonance(xy, model))
+  expect_silent(validate_consonance(xy, suite))
+  expect_silent(validate_consonance(xy, model))
 })
 
 test_that("test_consonance using a model with consonance suite", {
@@ -69,8 +69,8 @@ test_that("test_consonance using a model with consonance suite", {
   expect_true("consonance" %in% names(model))
   xy.bad <- data.frame(x=c(1,2,-4), y=c(2,3,4))
   # the suite should raise an error, and so should the model
-  expect_error(capture_output(test_consonance(xy.bad, suite)))
-  expect_error(capture_output(test_consonance(xy.bad, model)))
+  expect_error(capture_output(validate_consonance(xy.bad, suite)))
+  expect_error(capture_output(validate_consonance(xy.bad, model)))
 })
 
 
@@ -86,7 +86,7 @@ test_that("attaching sets function environment", {
       simple_range(x, lower=.model$a, upper=.model$b)
     })
   model <- attach_consonance(mylist, suite)
-  expect_silent(test_consonance(c(12, 14), model))
-  expect_error(capture_output(test_consonance(c(5, 15), model)))
+  expect_silent(validate_consonance(c(12, 14), model))
+  expect_error(capture_output(validate_consonance(c(5, 15), model)))
 })
 
