@@ -30,25 +30,25 @@ suite_wrapped <- consonance_suite() +
 # checkmate tests on simple data objects
 
 test_that("add checkmate test without arguments", {
-  expect_silent(validate_consonance(4, suite_assert))
-  expect_silent(validate_consonance(-4, suite_assert))
-  result <- validate_consonance(4, suite_assert)
+  expect_silent(validate(4, suite_assert))
+  expect_silent(validate(-4, suite_assert))
+  result <- validate(4, suite_assert)
   expect_equal(result, 4)
 })
 
 test_that("potential pitfall mis-specifying check and asser", {
-  expect_silent(validate_consonance(4, suite_check_bad))
+  expect_silent(validate(4, suite_check_bad))
 })
 
 test_that("checkmate suite with arguments", {
-  expect_silent(validate_consonance(4, suite_percentage))
-  expect_error(capture_output(validate_consonance(120, suite_percentage)))
-  expect_error(capture_output(validate_consonance(-4, suite_percentage)))
+  expect_silent(validate(4, suite_percentage))
+  expect_error(capture_output(validate(120, suite_percentage)))
+  expect_error(capture_output(validate(-4, suite_percentage)))
 })
 
 test_that("checkmate suite with wrapped function", {
-  expect_silent(validate_consonance(4, suite_wrapped))
-  expect_error(capture_output(validate_consonance(120, suite_wrapped)))
+  expect_silent(validate(4, suite_wrapped))
+  expect_error(capture_output(validate(120, suite_wrapped)))
 })
 
 
@@ -60,7 +60,7 @@ test_that("add checkmate tests for columns in a data frame (passing)", {
     consonance_assert("a", assert_numeric, .var="a") +
     consonance_assert("b", assert_numeric, .var="b")
   d <- data.frame(a=1:4, b=11)
-  expect_silent(validate_consonance(d, cons))
+  expect_silent(validate(d, cons))
 })
 
 test_that("add checkmate tests for columns in a data frame (fail)", {
@@ -68,7 +68,7 @@ test_that("add checkmate tests for columns in a data frame (fail)", {
     consonance_test("a", assert_numeric, .var="a") +
     consonance_test("b", assert_numeric, .var="b")
   d <- data.frame(a=1:4, b=letters[1:4], stringsAsFactors=FALSE)
-  expect_error(capture_output(validate_consonance(d, cons)))
+  expect_error(capture_output(validate(d, cons)))
 })
 
 test_that("checkmate tests in range", {
@@ -76,6 +76,6 @@ test_that("checkmate tests in range", {
     consonance_test("a", test_numeric, lower=0, upper=1, .var="a") +
       consonance_test("b", test_numeric, lower=0, upper=1, .var="b")
   df <- data.frame(a=seq(0.1, 0.9, by=0.2), b=0.5)
-  expect_silent(validate_consonance(df, suite))
+  expect_silent(validate(df, suite))
 })
 

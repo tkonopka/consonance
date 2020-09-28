@@ -24,7 +24,8 @@ Suggests:
     microbenchmark,
     rmarkdown,
     Rcssplot (>= 1.0),
-    testthat
+    testthat,
+    validate
 VignetteBuilder: knitr
 Encoding: UTF-8
 RoxygenNote: 7.1.1

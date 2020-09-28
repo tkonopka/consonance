@@ -152,6 +152,7 @@ get_consonance_logger <- function(suite, logging.level=NA, log.file=NA) {
 #' set NULL to avoid logging altogether
 #' @param log.file character, path to log file, or leave NA to follow
 #' the logger set up within suite
+#' @export
 #'
 #' @return object x, unchanged
 #'
@@ -163,17 +164,16 @@ get_consonance_logger <- function(suite, logging.level=NA, log.file=NA) {
 #'
 #' # applying the test or suite on numeric data
 #' # should execute without visible output
-#' test_consonance(c(1, 2, 3), test_1)
-#' test_consonance(c(1, 2, 3), suite_1)
+#' validate(c(1, 2, 3), test_1)
+#' validate(c(1, 2, 3), suite_1)
 #'
-#' # applying the test or suite on non-numeric data
-#' # should produce message and stop execution
-#' # test_consonance(letters, test_1)
-#' # test_consonance(letters, suite_1)
+#' # applying on non-numeric data should produce messages and stop execution
+#' # validate(letters, test_1)
+#' # validate(letters, suite_1)
 #'
-validate_consonance <- function(x, suite, level=NA,
-                                skip=FALSE, skip.action=c("log", "none"),
-                                logging.level=NA, log.file=NA) {
+validate <- function(x, suite, level=NA,
+                     skip=FALSE, skip.action=c("log", "none"),
+                     logging.level=NA, log.file=NA) {
 
   if (skip & match.arg(skip.action) == "none")
     return(invisible(x))
@@ -203,12 +203,5 @@ validate_consonance <- function(x, suite, level=NA,
   }
 
   invisible(x)
-}
-
-
-#' @rdname validate_consonance
-#' @export
-validate <- function(x, suite, ...) {
-  validate_consonance(x, suite=suite, ...)
 }
 

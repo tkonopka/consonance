@@ -23,7 +23,7 @@
 #' xy.model$consonance
 #'
 #' # use the model as-if it were a test suite
-#' test_consonance(xy, xy.model)
+#' validate(xy, xy.model)
 #'
 attach_consonance <- function(object, suite) {
   if (is.null(object)) {

@@ -221,11 +221,11 @@ datasets.
 ```{r, error=TRUE}
 library(magrittr)
 # the training and test datasets should evaluate quietly
-d_train %>% validate_consonance(model_two_A)
-d_test %>% validate_consonance(model_two_A)
+d_train %>% validate(model_two_A)
+d_test %>% validate(model_two_A)
 # the corrupted datasets will generate messages
-d_corrupt_3 %>% validate_consonance(model_two_A)
-d_corrupt_4 %>% validate_consonance(model_two_A)
+d_corrupt_3 %>% validate(model_two_A)
+d_corrupt_4 %>% validate(model_two_A)
 ```
 
 Note that the test suites for `model_all_A` and `model_two_A` are the
@@ -293,11 +293,11 @@ We can again evaluate our original and corrupted datasets with these new models.
 
 ```{r, error=TRUE}
 # the training and test datasets should evaluate quietly
-d_train %>% validate_consonance(model_all_B)
-d_test %>% validate_consonance(model_all_B)
+d_train %>% validate(model_all_B)
+d_test %>% validate(model_all_B)
 # the corrupted datasets will generate messages
-d_corrupt_3 %>% validate_consonance(model_all_B)
-d_corrupt_4 %>% validate_consonance(model_all_B)
+d_corrupt_3 %>% validate(model_all_B)
+d_corrupt_4 %>% validate(model_all_B)
 ```
 
 Again, we have signals that the corrupted datasets are not concordant with

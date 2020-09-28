@@ -30,6 +30,6 @@ xy.model <- attach_consonance(xy.lm, suite)
 xy.model$consonance
 
 # use the model as-if it were a test suite
-test_consonance(xy, xy.model)
+validate(xy, xy.model)
 
 }
