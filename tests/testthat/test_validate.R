@@ -209,3 +209,24 @@ test_that("validate can toggle strictness at runtime", {
     validate(1:3, suite_assert, level="warning")))
 })
 
+
+##############################################################################
+# logging of validations using partial objects, e.g. abc[, 1:2]
+
+test_that("validate reports partial object names", {
+  s <- consonance_suite() +
+    consonance_test("x numeric", is.numeric, .var="x") +
+    consonance_test("x numeric", is.numeric, .var="y")
+  df <- data.frame(x=1:4, y=0, z=1:2)
+  expect_silent(capture_output(validate(df, s)))
+  expect_silent(capture_output(validate(df[, 1:2], s)))
+  expect_error(capture_output(validate(df[, c(1,3)], s)))
+  # now evaluate to capture the output
+  out <- capture_output(validate(df[, c(1,3)], s, level="stop"))
+  # the output should report the data object is based on df
+  expect_true(grepl("df", out))
+  # there should not be strange nested lists
+  # (this is a test based on a historical bug)
+  expect_false(grepl("\\[conson", out))
+})
+

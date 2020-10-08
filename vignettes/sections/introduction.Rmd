@@ -1,9 +1,10 @@
 ## Introduction
 
-Consonance means [accord or agreement](https://www.dictionary.com/browse/consonance).
-Package `consonance` uses this term in the context of data analysis to
-convey that a dataset passes a set of criteria and that, for example, the
-dataset can progress to statistical analysis.
+Consonance means
+[accord or agreement](https://www.dictionary.com/browse/consonance). Package
+`consonance` uses this term to convey that a dataset passes a set of criteria.
+In the context of a data-analysis pipeline, for example, consonance testing can
+suggest that a raw dataset can progress to statistical analysis.
 
 As an example of the concept of consonance, consider the short data series
 below.
@@ -33,19 +34,17 @@ applying them on data before making predictions is not as straightforward as
 one might wish. The `consonance` package streamlines defining groups of
 checks on data and applying them within analysis pipelines.
 
-Quality control in data analysis can be thought of in terms of individual
-components, or in terms of how those components interact with one another.
 In software development, unit testing is an effective technique for tracking
 that functions or packages perform their tasks correctly. The `testthat`
 package is a leading toolkit in this regard in the R ecosystem. When working
-with data, packages `assertthat`, `checkmate`, and `assertr`, among
+with data, packages `assertthat`, `checkmate`, `assertr`, `validate`, among
 others, offer varying combinations of features. `assertthat` and `checkmate`
 focus on testing individual variables, for example to check for missing values
-or value ranges. `assertr` also provides tools to test entire datasets, for
-example to detect outliers. In addition, these packages can be extended in
+or value ranges. `assertr` and `validate` provides tools to test entire datasets,
+for example to detect outliers. In addition, these packages can be extended in
 many ways. But the use of quality controls in routine analysis
-is still not as commonplace as unit-testing is in software development, and
-this may be in part due to the interface and defaults features of the
+is still not as commonplace as unit-testing is in software development. This
+may be in part due to the interface and default settings of the
 available tools.
 
 Package `consonance` provides an alternative framework for building suites
@@ -54,14 +53,15 @@ can be easily set up, maintained, and applied on data. Other features
 include the ability to attach test to model objects, define tests at varying
 levels of severity, and log outcomes. The framework can be thought of as a
 convenience layer for managing `assertthat` or `checkmate` tests. Or, it
-can be thought of as an alternative syntax for `assertr` test chains.
+can be thought of as an alternative syntax to `assertr` or `validate`.
 
 The next section in this vignette contains an [overview](#overview)
 of the package; this serves to introduce the core package functions and to
-show minimal working examples. The [user's guide](#guide) provides more
-details on all the package features. The section on [use cases](#usecases)
+show working examples. The [user's guide](#guide) provides more
+details on package features. The section on [use cases](#usecases)
 shows templates for three different ways to apply the package in practice.
 These scenarios cover software development as well as data analysis. Separate
-vignettes provide more details on attaching consonance suites to model objects
-and quantify the cost of consonance testing in terms of running time.
+vignettes provide more details on attaching consonance suites to model objects,
+perform consonance validations in batch, and quantify the cost of consonance
+testing in terms of running time.
 

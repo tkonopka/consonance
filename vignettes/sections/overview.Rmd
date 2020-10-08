@@ -70,6 +70,15 @@ c(1, 2) %>% validate(suite_2)
 c(a=1, b=NA) %>% validate(suite_2)
 ```
 
+In each case, the lines containing 'consonance error:' indicate which of
+the criteria generated the errors. It is worth mentioning that other frameworks
+(`assertr`, `validate`) can provide more granular information, e.g. list the
+individual elements of the input data triggered failures. However, `consonance`
+takes the view that consonance tests should succeed in most situations, and
+the limited book-keeping helps to make `consonance` fast (see vignette on
+performance). At the same time, in situations where the data causes errors,
+the above messages focus manual debugging while keeping the output succinct.
+
 The convenience of the `consonance` workflow becomes apparent when
 performing  long series of tests, testing more complex objects like data
 frames or models, logging output, and toggling strictness of individual

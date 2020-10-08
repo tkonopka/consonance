@@ -8,7 +8,7 @@
 validate(
   x,
   suite,
-  level = NA,
+  level = c(NA, "warning", "error", "stop"),
   skip = FALSE,
   skip.action = c("log", "none"),
   logging.level = c(NA, "INFO", "WARN", "ERROR", "NONE"),

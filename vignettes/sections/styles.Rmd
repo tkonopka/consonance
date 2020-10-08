@@ -6,6 +6,9 @@ h1 {
 h2 {
     margin-top: 2em;
 }
+h4 {
+    margin-left: 0;
+}
 img {
     border: none;
     margin: 0;

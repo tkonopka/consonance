@@ -28,11 +28,12 @@ The `consonance` package provides a framework for performing quality control
 on datasets and models. This vignette compares the performance (running time)
 of consonance tests to other approaches for testing data.
 
-As a word of caution, the comparison presented below includes approaches
-implemented using only base R and some using external packages `checkmate`,
-`assertr`, and `validate`. However, the comparison cannot be considered
-exhaustive or complete. Moreover, measurements are only performed on a
-single dataset, so they cannot be taken as representative of all use cases.
+As a word of caution, the comparisons below include approaches
+implemented with base R (only) and some approaches using external packages
+`checkmate`, `assertthat`, `assertr`, and `validate`. However, the comparisons
+cannot be considered exhaustive or complete. Moreover, measurements are
+performed on a single dataset and cannot be taken as representative of all
+use cases.
 
 
 
@@ -174,7 +175,7 @@ use_validate <- function(d) {
 }
 ```
 
-**Note:** The above are first-attempt implementations and they are not
+**Note:** These are first-attempt implementations and they are not
 exactly equivalent. Some of the distinctions and their effect on
 performance are mentioned in the discussion at the end.
 

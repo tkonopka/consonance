@@ -179,7 +179,7 @@ get_consonance_logger <- function(suite, logging.level=NA, log.file=NA) {
 #' # validate(letters, test_1)
 #' # validate(letters, suite_1)
 #'
-validate <- function(x, suite, level=NA,
+validate <- function(x, suite, level=c(NA, "warning", "error", "stop"),
                      skip=FALSE, skip.action=c("log", "none"),
                      logging.level=c(NA, "INFO", "WARN", "ERROR", "NONE"),
                      log.file=NA,
@@ -188,6 +188,7 @@ validate <- function(x, suite, level=NA,
   if (skip & match.arg(skip.action) == "none")
     return(invisible(x))
   logging.level <- match.arg(logging.level)
+  level <- match.arg(level)
 
   # support batch testing
   if (missing(suite) & all(c("object", "suite") %in% names(x))) {
@@ -200,8 +201,8 @@ validate <- function(x, suite, level=NA,
                              log.file=log.file)
   } else {
     # get a suite object - either from argument or an attachment
-    if (is.na(x.name)) x.name <- substitute(x)
-    if (is.na(suite.name)) suite.name <- substitute(suite)
+    if (is.na(x.name)) x.name <- deparse(substitute(x))
+    if (is.na(suite.name)) suite.name <- deparse(substitute(suite))
     result <- validate_inner(x, x.name=x.name,
                              suite, suite.name=suite.name,
                              level=level, skip=skip,
@@ -228,7 +229,7 @@ validate_inner <- function(x, suite, level=NA, skip=FALSE,
 
   suite_env <- get_consonance_suite_env(suite)
   if (is.null(suite_env))
-    stop(paste0("object '", substitute(suite.name),
+    stop(paste0("object '", deparse(substitute(suite.name)),
                 "' is not a consonance suite\n"))
   suite <- suite_env$suite
   # get a logger - either the one from the suite or adjust based on args
@@ -249,7 +250,10 @@ validate_inner <- function(x, suite, level=NA, skip=FALSE,
 
   if (is.na(level))
     level <- suite$level
-  final["stop"] <- as.integer(final[level]>0)
+  if (level %in% names(final))
+    final["stop"] <- as.integer(final[level]>0)
+  else
+    final["stop"] <- 0
   final
 }
 
