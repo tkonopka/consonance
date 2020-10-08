@@ -175,11 +175,9 @@ delineate precise behaviors.
 
 The `consonance` package uses the word 'test' in a loose sense as well as in
 a precise sense. The loose sense is used in the 'consonance testing', in the
-label for a component in a suite object (e.g. `suite$tests`), and in the
-function `test_consonance`. The word is meant to convey applying criteria on
-input data.
+label for a component in a suite object (e.g. `suite$tests`). The word is meant to convey applying criteria/rules on input data.
 
-The `consonance` package also uses the terms `assert`, `check`, and `test` in
+The `consonance` package also uses the verbs 'assert', 'check', and 'test' in
 a precise sense, following the convention described in package `checkmate`.
 Given a function `f(x)`, the three actions process an object `x` and signal
 a positive (PASS) or a negative (FAIL) outcome.
@@ -192,7 +190,7 @@ a positive (PASS) or a negative (FAIL) outcome.
 
 Given this terminology, function `assert_n_unique` is an assertion because it
 returns its input or stops execution. An analogous behavior might be written
-as a test as follows
+as a test.
 
 ```{r}
 test_n_unique <- function(x, n) {
@@ -273,7 +271,7 @@ data.frame(x=mean(anscombe.qs[1:2])) %>% validate(suite_x)
 ```
 
 Note that the last example generates only warnings and allows execution
-to continue. It is also possible to run `test_consonance` in a very strict
+to continue. It is also possible to run `validate` in a very strict
 mode and stop execution even upon warnings. This can be achieved by setting
 `level`.
 
@@ -338,16 +336,16 @@ to the figure).
 Note that this example produces warning messages, but it nonetheless displays
 a prediction. This is because the assertion in `suite_lm` was defined with
 `.level="warning"`. It would also be reasonable to set `.level="error"`
-(the default). `test_consonance` would then halt execution before any
+(the default). `validate` would then halt execution before any
 prediction is made.
 
 
 ### Logging
 
-By default, `test_consonance` does not generate output when
+By default, `validate` does not generate output when
 evaluated on consonant data and outputs messages upon problems. The
 level of logging can be adjusted by setting `logging.level` to `"INFO"`,
-`"WARN"`, or `"ERROR"`. There are actually several mechanisms to implement
+`"WARN"`, or `"ERROR"`. There are several mechanisms to implement
 this adjustment.
 
 Setting the logging level in the suite constructor affects all evaluations.
@@ -361,7 +359,7 @@ suite_verbose <-
 validate(c("a", "b"), suite_verbose)
 ```
 
-Another way to toggle the logging level is within `test_consonance`.
+Another way to toggle the logging level is within `validate`.
 
 ```{r}
 # set up a canonical suite
@@ -378,7 +376,7 @@ validate(c("a", "b"), suite_standard)
 
 Instead of writing messages to the console, the logger can output into a file
 instead. This is achieved with argument `log.file`, either in the suite
-constructor or within `test_consonance`. For brevity, an example of the
+constructor or within `validate`. For brevity, an example of the
 latter is as follows.
 
 ```{r, echo=TRUE, eval=FALSE}

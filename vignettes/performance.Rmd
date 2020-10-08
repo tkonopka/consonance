@@ -275,7 +275,7 @@ been checked and repeat-testing is redundant.
 
 Implementing test-skipping in base R involves wrapping the tests inside
 an 'if' condition. The `consonance` package implements a dedicated argument
-so that this feature does not require any extra lines of code.
+so this feature does not require new lines of code.
 
 ```{r}
 use_base_R_skip <- function(d, skip=FALSE) {
@@ -285,7 +285,7 @@ use_base_R_skip <- function(d, skip=FALSE) {
 use_consonance_skip <- function(d, skip=FALSE, skip.action="log") {
   # note this avoids the pipe operator.
   # This makes the function more comparable to base R, but not comparable
-  # to the original use_consonance in previous section.
+  # to the original use_consonance in the previous section.
   validate(d, suite_consonance, skip=skip, skip.action=skip.action)
 }
 ```
@@ -317,8 +317,9 @@ plot_runtimes(runtimes_skip, xlim=skip.range, corner="",
 newpar <- par(oldpar)
 ```
 
-Note that for larger datasets, the running times for the two consonance
-approaches that skip tests would remain constant.
+Note that for larger datasets, the running times for all approaches
+that skip tests would remain constant and the running times for the
+approaches that perform tests ('base R' and 'consonance') would increase.
 
 
 ## Discussion {#discussion}
@@ -326,15 +327,14 @@ approaches that skip tests would remain constant.
 In the context of data quality control, run-time performance sits in an
 uncomfortable position. On the one hand, performance should not be a primary
 concern because a limited amount of time spent on quality control can prevent
-time-consuming debugging. On the other hand, if checks impose noticeable
-slowdown, that can discourage the adoption of those steps.
-The presented results show that the `consonance` package introduces
-some overhead compared to tests implemented in base R, but that it nonetheless
-executes faster than other frameworks.
+time-consuming debugging. On the other hand, if checks impose a noticeable
+slowdown, that can discourage adoption. The presented results show that
+the `consonance` package introduces some overhead compared to base R,
+but nonetheless executes faster than other frameworks.
 
 The presented measurements are guidelines only, and there are important
-caveats to interpreting the benchmark data. Beside the well-known
-difficulties in assessing running time of code and the limited range
+caveats to interpreting the benchmark data. Besides the well-known
+difficulties in assessing the running time of code and the limited range
 of the benchmark conditions, it is important to emphasize that the tested
 pipelines actually provide distinct features.
 

@@ -1,0 +1,105 @@
+---
+title: Consonance testing in batch
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Consonance testing in batch}
+  %\usepackage[UTF-8]{inputenc}
+---
+
+```{r, child=file.path("sections", "styles.Rmd")}
+```
+
+```{r, echo=FALSE}
+suppressMessages(library(Rcssplot))
+library(checkmate)
+```
+
+
+## Introduction
+
+In some situations, it is relevant to perform validations multiple times.
+
+For example, in interactive sessions in which objects can become
+over-written - by design or by mistake -  we might want to check them
+in the console. Another use case arises in scripts that produce several
+objects with overlapping requirements.
+
+
+## Individual validations
+
+In order to prep for the next section on validation in batch, let's
+first review consonance validation on individual objects. Let's set up
+a consonance suite for data frames.
+
+```{r}
+library(consonance)
+suite_numeric <-
+  consonance_assert("x numeric", assert_numeric, .var="x", any.missing=FALSE) +
+  consonance_assert("y numeric", assert_numeric, .var="y", any.missing=FALSE)
+```
+
+For data objects, we will use two small data frames.
+
+```{r}
+d1 <- data.frame(x=c(3, 4), y=c(7, 0), z=0)
+d1
+d2 <- data.frame(x=c(3, NA), y=c("7", "0"), stringsAsFactors=FALSE)
+d2
+```
+
+The direct way of using consonance is to validate each object
+against the suite, one at a time.
+
+```{r, error=TRUE}
+# should execute quietly
+validate(d1, suite_numeric)
+# should signal errors
+validate(d2, suite_numeric)
+```
+
+
+## Validations in batch
+
+To perform validations in batch, we first specify pairings of objects and
+test-suites.
+
+```{r}
+batch <- data.frame(object=c("d1", "d2"), suite="suite_numeric",
+                    stringsAsFactors=FALSE)
+batch
+```
+
+Then, we can validate using this group object
+
+```{r, error=TRUE}
+validate(batch)
+```
+
+The batch can be of any size, and becomes increasingly useful when working
+in environments with a large number of objects. To extend the above example,
+we can prepare several other data frames.
+
+```{r}
+# additional objects with numeric data
+d3 <- data.frame(x=1:3, y=1:3)
+d4 <- data.frame(x=1:4, y=1:4)
+d5 <- data.frame(x=1:5, y=1:5)
+batchB <- data.frame(object=paste0("d", c(1,3,4,5)),
+                     suite="suite_numeric",
+                     stringsAsFactors=FALSE)
+# should execute quietly to signal consonant data
+validate(batchB)
+````
+
+Quiet execution signals that all data frames pass all the criteria.
+
+
+## Appendix
+
+```{r}
+sessionInfo()
+```
+

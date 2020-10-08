@@ -2,6 +2,7 @@
 % Please edit documentation in R/validate.R
 \name{validate}
 \alias{validate}
+\alias{validate_inner}
 \title{check consonance of an object with a suite of tests}
 \usage{
 validate(
@@ -10,8 +11,22 @@ validate(
   level = NA,
   skip = FALSE,
   skip.action = c("log", "none"),
+  logging.level = c(NA, "INFO", "WARN", "ERROR", "NONE"),
+  log.file = NA,
+  x.name = NA,
+  suite.name = NA
+)
+
+validate_inner(
+  x,
+  suite,
+  level = NA,
+  skip = FALSE,
   logging.level = NA,
-  log.file = NA
+  log.file = NA,
+  x.name = NA,
+  suite.name = NA,
+  ...
 )
 }
 \arguments{
@@ -33,9 +48,19 @@ set NULL to avoid logging altogether}
 
 \item{log.file}{character, path to log file, or leave NA to follow
 the logger set up within suite}
+
+\item{x.name}{character, (used by validate_batch), leave NA during
+standard usage}
+
+\item{suite.name}{character, (used by validate_batch), leave NA during
+standard usage}
+
+\item{...}{other arguments, not used}
 }
 \value{
 object x, unchanged
+
+vector with pass, warning, error, and stop counts
 }
 \description{
 The function always returns its primary input and should be invoked
@@ -57,3 +82,4 @@ validate(c(1, 2, 3), suite_1)
 # validate(letters, suite_1)
 
 }
+\keyword{internal}

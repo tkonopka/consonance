@@ -1,4 +1,3 @@
-lib
 <style>
 <!-- Html styles to augment html_vignette -->
 h1 {

@@ -135,19 +135,24 @@ test_that("suite constructor logs into a file", {
   expect_false(file.exists(file_path))
 })
 
-test_that("test_consonance can log into a file on request", {
+test_that("validate can log into a file on request", {
   file_path <- tempfile()
   expect_false(file.exists(file_path))
-  # one run of test_consonance should generate 2 lines in log
+  # one run of test_consonance should generate 4 lines in log
+  # INFO ... validate() (not recorded)
+  # consonance error: (name of test)
+  # consonance data: ...
+  # consonance suite: ...
+  # consonance result: ...
   expect_error(validate(1:3, suite_assert, log.file=file_path))
   expect_true(file.exists(file_path))
-  expect_equal(length(readLines(file_path)), 2)
+  expect_equal(length(readLines(file_path)), 4)
   # a second run without log.file should not generate additional lines
   expect_error(capture_output(validate(1:3, suite_assert)))
-  expect_equal(length(readLines(file_path)), 2)
-  # a third run with log.file should add two more lines
-  expect_error(validate(1:3, suite_assert, log.file=file_path))
   expect_equal(length(readLines(file_path)), 4)
+  # a third run with log.file should add 4 more lines
+  expect_error(validate(1:3, suite_assert, log.file=file_path))
+  expect_equal(length(readLines(file_path)), 8)
   unlink(file_path)
   expect_false(file.exists(file_path))
 })
@@ -179,43 +184,28 @@ test_that("skipping tests logs the skip", {
                                     skip=TRUE, skip.action="none"))
 })
 
-test_that("test_consonance can use different logging level", {
+test_that("validate can use different logging level", {
   # suite_assert should be silent on normal inputs
   expect_silent(validate(abc, suite_assert))
   # but can produce output by setting logging level manually
   expect_output(validate(abc, suite_assert, logging.level="INFO"))
 })
 
-test_that("test_consonance can avoid logging altogether at run-time", {
+test_that("validate can avoid logging altogether at run-time", {
   s <- suite_assert
   # no output on good data
-  expect_silent(validate(abc, s, logging.level=NULL))
+  expect_silent(validate(abc, s, logging.level="NONE"))
   # error and output on bad data
   expect_output(expect_error(validate(1:3, s)))
   # error only but not output
-  expect_silent(expect_error(validate(1:3, s, logging.level=NULL)))
+  expect_silent(expect_error(validate(1:3, s, logging.level="NONE")))
 })
 
-test_that("test_consonance can toggle strictness at runtime", {
+test_that("validate can toggle strictness at runtime", {
   # suite_warning should only generate warnings and keep going (no error)
   expect_output(validate(1:3, suite_warning), "WARN")
   # but can halt if runtime level is more strict
   expect_error(capture_output(
     validate(1:3, suite_assert, level="warning")))
 })
-
-
-
-##############################################################################
-# validation with generic methods
-
-test_that("validate()", {
-  expect_silent(validate(abc, suite=suite_assert))
-  expect_silent(validate(abc, suite=suite_check))
-  expect_silent(validate(abc, suite=suite_test))
-  expect_error(capture_output(validate(1:3, suite=suite_verbose)))
-  expect_error(capture_output(validate(1:3, suite=suite_check)))
-  expect_error(capture_output(validate(1:3, suite=suite_test)))
-})
-
 

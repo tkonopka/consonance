@@ -28,8 +28,7 @@ consonance suite created by `consonace_suite()`. The plus sign and function
 additional ones. The implementation of the assertion is provided by
 `assert_numeric` from the `checkmate` package.
 
-To use the object, we invoke the `test_consonance` function. Here are some
-examples.
+To use the object, we invoke the `validate` function. Here are some examples.
 
 ```{r, error=TRUE}
 # Testing numeric vectors results in quiet execution
@@ -39,7 +38,7 @@ validate(c(1, 2, NA), suite_1)
 validate(c("a", "b"), suite_1)
 ```
 
-All examples provide `test_consonance` with a data vector and our test suite.
+All examples provide `validate` with a data vector and our test suite.
 The first two lines succeed quietly because their data vectors are composed
 of numbers. The last line signals that the data is not in agreement, i.e.
 not in consonance, with the criteria in the suite.

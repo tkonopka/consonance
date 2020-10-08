@@ -19,15 +19,17 @@ source("plot_consonance.R")
 ```
 
 
-## Technical synopsis
+## Synopsis
 
 Consonance testing refers to the automated checking of compatibility of
 data with a processing pipeline.
 
 Several R packages already provide frameworks for unit testing,
-argument checking, and assertions. Package `consonance` provides an
-intermediate layer that links practical data analysis to those core
-frameworks. Its unique features include:
+argument checking, and assertions, including `testthat`, `assertr`,
+`checkmate`, and `validate`. Package `consonance` overlaps provides a
+layer that links practical data analysis to core libraries such as
+`checkmate`, and overlaps in scope with packages such as `assertr`
+and `validate`. Its features include:
 
  - Tests are grouped into suites that can be re-used many times.
  - Test definitions can use established frameworks (e.g. `checkmate`) as
